@@ -9,6 +9,7 @@ export interface TraceOptions {
   line: number;
   cwd?: string;
   rev?: string;
+  minLineSimilarity?: number;
 }
 
 export type ChangeKind = "added" | "modified" | "moved";
@@ -44,9 +45,16 @@ const LOG_FORMAT = `${RECORD}%H${FIELD}%an${FIELD}%ae${FIELD}%at${FIELD}%s${FIEL
 const HUNK_HEADER = /^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@/;
 const MAX_STEPS = 50;
 const NARROW_THRESHOLD = 0.5;
+export const DEFAULT_MIN_LINE_SIMILARITY = 0.5;
 
 export async function traceLine(options: TraceOptions): Promise<LineHistory> {
-  const { file, line, cwd = process.cwd(), rev = "HEAD" } = options;
+  const {
+    file,
+    line,
+    cwd = process.cwd(),
+    rev = "HEAD",
+    minLineSimilarity = DEFAULT_MIN_LINE_SIMILARITY,
+  } = options;
 
   if (!Number.isInteger(line) || line < 1) {
     throw new WhyError("INVALID_ARGUMENT", `Line must be a whole number of 1 or more, got ${line}`);
@@ -74,7 +82,7 @@ export async function traceLine(options: TraceOptions): Promise<LineHistory> {
     line,
     rev,
     content: lines[line - 1] ?? "",
-    changes: await followLine(root, { rev, path, line }),
+    changes: await followLine(root, { rev, path, line }, minLineSimilarity),
   };
 }
 
@@ -84,7 +92,11 @@ interface Position {
   line: number;
 }
 
-async function followLine(root: string, start: Position): Promise<LineChange[]> {
+async function followLine(
+  root: string,
+  start: Position,
+  minLineSimilarity: number,
+): Promise<LineChange[]> {
   const changes: LineChange[] = [];
   const visited = new Set<string>();
   let position: Position | undefined = start;
@@ -93,7 +105,7 @@ async function followLine(root: string, start: Position): Promise<LineChange[]> 
     const key = `${position.rev}:${position.path}:${position.line}`;
     if (visited.has(key)) break;
     visited.add(key);
-    position = await followSegment(root, position, changes);
+    position = await followSegment(root, position, changes, minLineSimilarity);
   }
 
   return changes;
@@ -103,6 +115,7 @@ async function followSegment(
   root: string,
   position: Position,
   changes: LineChange[],
+  minLineSimilarity: number,
 ): Promise<Position | undefined> {
   const entries = parseEntries(await lineLog(root, position));
 
@@ -110,10 +123,11 @@ async function followSegment(
     const { change } = entry;
     if (change.before.length <= 1) {
       changes.push(change);
+      if (replacedUnrelatedLine(change, minLineSimilarity)) return undefined;
       continue;
     }
 
-    const narrowed = narrowToOneLine(entry);
+    const narrowed = narrowToOneLine(entry, Math.max(NARROW_THRESHOLD, minLineSimilarity));
     if (!narrowed) {
       changes.push(change);
       return undefined;
@@ -147,7 +161,16 @@ async function followSegment(
   return { rev: `${origin.commit}^`, path: move.from.path, line: move.from.lineNumber };
 }
 
-function narrowToOneLine(entry: LogEntry): { text: string; lineNumber: number } | undefined {
+function replacedUnrelatedLine(change: LineChange, minLineSimilarity: number): boolean {
+  const [before] = change.before;
+  if (before === undefined || minLineSimilarity <= 0) return false;
+  return similarity(normalize(before), normalize(change.after[0] ?? "")) < minLineSimilarity;
+}
+
+function narrowToOneLine(
+  entry: LogEntry,
+  threshold: number,
+): { text: string; lineNumber: number } | undefined {
   const target = normalize(entry.change.after[0] ?? "");
   let best: { text: string; lineNumber: number; score: number } | undefined;
 
@@ -159,7 +182,7 @@ function narrowToOneLine(entry: LogEntry): { text: string; lineNumber: number } 
     }
   });
 
-  if (!best || best.score < NARROW_THRESHOLD) return undefined;
+  if (!best || best.score < threshold) return undefined;
   return { text: best.text, lineNumber: best.lineNumber };
 }
 

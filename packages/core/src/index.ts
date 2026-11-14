@@ -43,5 +43,5 @@ export { findIssueRefs } from "./github/refs.ts";
 export type { IssueLink, IssueRef } from "./github/refs.ts";
 export { findGitHubRepo, parseGitHubRemote, parseRepoSlug } from "./github/remote.ts";
 export type { GitHubRepo } from "./github/remote.ts";
-export { parseLineLog, traceLine } from "./traceLine.ts";
+export { DEFAULT_MIN_LINE_SIMILARITY, parseLineLog, traceLine } from "./traceLine.ts";
 export type { ChangeKind, LineChange, LineHistory, TraceOptions } from "./traceLine.ts";

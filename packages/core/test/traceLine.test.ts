@@ -111,7 +111,12 @@ describe("traceLine", () => {
       { message: "plus", files: { "q.sql": "select 1;\n+++ @@ -1 +1 @@\n" } },
     ]);
 
-    const history = await traceLine({ cwd: repo.path, file: "q.sql", line: 2 });
+    const history = await traceLine({
+      cwd: repo.path,
+      file: "q.sql",
+      line: 2,
+      minLineSimilarity: 0,
+    });
 
     expect(history.changes.map((c) => [c.before, c.after])).toEqual([
       [["--- note 2"], ["+++ @@ -1 +1 @@"]],
@@ -402,5 +407,86 @@ describe("traceLine stays on one line", () => {
       kind: "modified",
       before: ["alpha();", "beta();"],
     });
+  });
+});
+
+describe("traceLine ends at a line that replaced unrelated code", () => {
+  const text = (...lines: string[]) => `${lines.join("\n")}\n`;
+  const history = [
+    {
+      message: "old helper",
+      files: { "a.js": text("start();", "cleanupTempFiles(dir);", "end();") },
+    },
+    {
+      message: "add limit",
+      files: { "a.js": text("start();", "const limit = readLimit(config);", "end();") },
+    },
+    {
+      message: "raise default",
+      files: { "a.js": text("start();", "const limit = readLimit(config, 50);", "end();") },
+    },
+  ];
+
+  it("stops where a one-line edit replaced different code", async () => {
+    const repo = make(history);
+
+    const result = await traceLine({ cwd: repo.path, file: "a.js", line: 2 });
+
+    expect(result.changes.map((c) => [c.subject, c.before])).toEqual([
+      ["raise default", ["const limit = readLimit(config);"]],
+      ["add limit", ["cleanupTempFiles(dir);"]],
+    ]);
+  });
+
+  it("keeps following ordinary edits, even large ones on short lines", async () => {
+    const repo = make([
+      { message: "create", files: { "a.js": text("a();", "res.status = 1;", "b();") } },
+      {
+        message: "validate",
+        files: { "a.js": text("a();", "res.status = validate(code);", "b();") },
+      },
+    ]);
+
+    const result = await traceLine({ cwd: repo.path, file: "a.js", line: 2 });
+
+    expect(result.changes.map((c) => c.subject)).toEqual(["validate", "create"]);
+  });
+
+  it("follows every step when the cut-off is turned off", async () => {
+    const repo = make(history);
+
+    const result = await traceLine({ cwd: repo.path, file: "a.js", line: 2, minLineSimilarity: 0 });
+
+    expect(result.changes.map((c) => c.subject)).toEqual([
+      "raise default",
+      "add limit",
+      "old helper",
+    ]);
+  });
+
+  it("uses the higher of the cut-off and the narrowing floor when several old lines collapse", async () => {
+    const repo = make([
+      {
+        message: "create",
+        files: {
+          "a.js": text("start();", "opts.maxAge /= 1000;", "opts.secure = true;", "end();"),
+        },
+      },
+      {
+        message: "rewrite",
+        files: { "a.js": text("start();", "var maxAge = opts.maxAge - 0", "end();") },
+      },
+    ]);
+
+    const loose = await traceLine({ cwd: repo.path, file: "a.js", line: 2 });
+    const strict = await traceLine({
+      cwd: repo.path,
+      file: "a.js",
+      line: 2,
+      minLineSimilarity: 0.6,
+    });
+
+    expect(loose.changes.map((c) => c.subject)).toEqual(["rewrite", "create"]);
+    expect(strict.changes.map((c) => c.subject)).toEqual(["rewrite"]);
   });
 });
