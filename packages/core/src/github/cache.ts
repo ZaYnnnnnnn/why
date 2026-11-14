@@ -14,8 +14,15 @@ export interface Cache {
 }
 
 export function defaultCacheDir(env: Record<string, string | undefined>): string {
-  const base = env["XDG_CACHE_HOME"] || join(homedir(), ".cache");
-  return join(base, "why", "github");
+  return join(cacheRoot(env), "github");
+}
+
+export function explanationCacheDir(env: Record<string, string | undefined>): string {
+  return join(cacheRoot(env), "explanations");
+}
+
+function cacheRoot(env: Record<string, string | undefined>): string {
+  return join(env["XDG_CACHE_HOME"] || join(homedir(), ".cache"), "why");
 }
 
 export function fileCache(dir: string): Cache {

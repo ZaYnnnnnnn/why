@@ -25,7 +25,7 @@ export { runGit } from "./git.ts";
 export { findRepoRoot, toRepoPath } from "./repo.ts";
 export { findMovedFrom } from "./findMovedFrom.ts";
 export type { MoveMatch, MoveResult, MoveTarget, SourceLocation } from "./findMovedFrom.ts";
-export { defaultCacheDir, fileCache, memoryCache } from "./github/cache.ts";
+export { defaultCacheDir, explanationCacheDir, fileCache, memoryCache } from "./github/cache.ts";
 export type { Cache, CacheEntry } from "./github/cache.ts";
 export { createGitHubClient, FOREVER, ONE_WEEK } from "./github/client.ts";
 export type { GetOptions, GitHubClient, GitHubClientOptions } from "./github/client.ts";

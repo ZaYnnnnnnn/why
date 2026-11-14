@@ -1,6 +1,8 @@
 import { styleText } from "node:util";
 import type {
   ChangeEvidence,
+  EvidenceSource,
+  ExplainResult,
   GitHubRepo,
   IssueEvidence,
   LineChange,
@@ -13,6 +15,7 @@ type Paint = (style: Style, text: string) => string;
 
 export interface FormatOptions {
   color: boolean;
+  explanation?: ExplainResult;
 }
 
 export function formatHistory(
@@ -29,14 +32,17 @@ export function formatHistory(
     "",
   ];
 
+  const github = "github" in history ? history.github : undefined;
+  if (options.explanation?.status === "explained") {
+    lines.push(...formatExplanation(options.explanation, github, paint), "");
+  }
+
   const count = history.changes.length;
   if (count === 0) {
     lines.push(paint("dim", "No commits found for this line."), "");
     return lines.join("\n");
   }
   lines.push(paint("dim", `${count} change${count === 1 ? "" : "s"}, newest first`), "");
-
-  const github = "github" in history ? history.github : undefined;
 
   for (const change of history.changes) {
     lines.push(
@@ -67,6 +73,39 @@ export function formatHistory(
   if (github) lines.push(paint("dim", summary(history as LinkedHistory)), "");
 
   return lines.join("\n");
+}
+
+function formatExplanation(
+  result: Extract<ExplainResult, { status: "explained" }>,
+  github: GitHubRepo | undefined,
+  paint: Paint,
+): string[] {
+  const labels = new Map(result.sources.map((source) => [source.id, citeLabel(source, github)]));
+  const cite = (ids: string[]) =>
+    paint("dim", `(${ids.map((id) => labels.get(id) ?? id).join(", ")})`);
+  const { explanation } = result;
+
+  const lines = [
+    paint("bold", "Why"),
+    `  ${explanation.summary} ${cite(explanation.summaryCites)}`,
+    "",
+  ];
+  for (const entry of explanation.timeline) lines.push(`  - ${entry.text} ${cite(entry.cites)}`);
+  lines.push("", paint("dim", `  Confidence: ${explanation.confidence}`));
+  for (const gap of explanation.gaps) lines.push(paint("dim", `  Not in the evidence: ${gap}`));
+  const model = result.model === "default" ? "" : ` ${result.model}`;
+  lines.push(
+    paint("dim", `  Explained by ${result.provider}${model}${result.cached ? " (cached)" : ""}`),
+  );
+  return lines;
+}
+
+function citeLabel(source: EvidenceSource, github: GitHubRepo | undefined): string {
+  if (source.kind !== "issue" || !github) return source.label;
+  const prefix = `${github.owner}/${github.repo}#`;
+  const at = source.label.toLowerCase().indexOf(prefix.toLowerCase());
+  if (at === -1) return source.label;
+  return `${source.label.slice(0, at)}#${source.label.slice(at + prefix.length)}`;
 }
 
 function formatEvidence(evidence: ChangeEvidence, github: GitHubRepo, paint: Paint): string[] {

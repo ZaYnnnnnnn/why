@@ -1,14 +1,21 @@
 import { resolve } from "node:path";
 import { parseArgs } from "node:util";
 import {
+  createAnthropicProvider,
+  createClaudeCliProvider,
   createGitHubClient,
   defaultCacheDir,
+  explainHistory,
+  explanationCacheDir,
   fileCache,
   findGitHubRepo,
   isWhyError,
   linkHistory,
   parseRepoSlug,
   traceLine,
+  WhyError,
+  type AiProvider,
+  type ExplainResult,
   type GitHubRepo,
   type LineHistory,
   type LinkedHistory,
@@ -26,6 +33,7 @@ export interface Io {
   cwd: string;
   env: Record<string, string | undefined>;
   fetch?: typeof fetch;
+  provider?: AiProvider;
 }
 
 export const EXIT_OK = 0;
@@ -44,11 +52,17 @@ Options:
   --github <owner/repo>  Use this GitHub repository instead of the git remotes
   --no-github            Skip GitHub and show git history only
   --refresh              Ignore cached GitHub answers
+  --explain              Add a short AI explanation that cites the evidence
+  --ai <provider>        claude-cli (default, your Claude Code sign-in) or
+                         anthropic (needs ANTHROPIC_API_KEY)
+  --model <name>         Model for the AI explanation
   -h, --help             Show this help
 
 Set GITHUB_TOKEN (or GH_TOKEN) to raise GitHub's limit from 60 to 5,000
 requests per hour. The token is only sent to api.github.com.
 `;
+
+const AI_PROVIDERS = ["claude-cli", "anthropic"];
 
 export async function run(argv: string[], io: Io): Promise<number> {
   let parsed;
@@ -64,6 +78,9 @@ export async function run(argv: string[], io: Io): Promise<number> {
         github: { type: "string" },
         "no-github": { type: "boolean" },
         refresh: { type: "boolean" },
+        explain: { type: "boolean" },
+        ai: { type: "string" },
+        model: { type: "string" },
         help: { type: "boolean", short: "h" },
       },
     });
@@ -79,6 +96,11 @@ export async function run(argv: string[], io: Io): Promise<number> {
   }
   if (positionals.length !== 1) {
     io.stderr.write(`why: expected exactly one <file>:<line>\n\n${USAGE}`);
+    return EXIT_USAGE;
+  }
+
+  if (values.ai !== undefined && !AI_PROVIDERS.includes(values.ai)) {
+    io.stderr.write(`why: --ai must be one of ${AI_PROVIDERS.join(", ")}\n`);
     return EXIT_USAGE;
   }
 
@@ -104,10 +126,17 @@ export async function run(argv: string[], io: Io): Promise<number> {
           refresh: values.refresh === true,
         });
 
+    const explained = values.explain
+      ? await explain(result, { io, ai: values.ai ?? "claude-cli", model: values.model })
+      : undefined;
+
     io.stdout.write(
       values.json
-        ? `${JSON.stringify(result, null, 2)}\n`
-        : formatHistory(result, { color: useColor(io) }),
+        ? `${JSON.stringify(explained ? { ...result, explanation: explained } : result, null, 2)}\n`
+        : formatHistory(result, {
+            color: useColor(io),
+            ...(explained ? { explanation: explained } : {}),
+          }),
     );
     return EXIT_OK;
   } catch (error) {
@@ -115,6 +144,43 @@ export async function run(argv: string[], io: Io): Promise<number> {
     io.stderr.write(`why: ${error.message}\n`);
     return error.code === "INVALID_ARGUMENT" ? EXIT_USAGE : EXIT_FAILURE;
   }
+}
+
+async function explain(
+  history: LineHistory | LinkedHistory,
+  { io, ai, model }: { io: Io; ai: string; model: string | undefined },
+): Promise<ExplainResult> {
+  let provider: AiProvider;
+  try {
+    provider = io.provider ?? createProvider(ai, model, io.env);
+  } catch (error) {
+    if (!(error instanceof WhyError)) throw error;
+    io.stderr.write(`why: AI explanation unavailable: ${error.message}\n`);
+    return { status: "unavailable", reason: error.message, sources: [] };
+  }
+
+  const result = await explainHistory(history, {
+    provider,
+    cache: fileCache(explanationCacheDir(io.env)),
+  });
+  if (result.status === "unavailable") {
+    io.stderr.write(`why: AI explanation unavailable: ${result.reason}\n`);
+  }
+  return result;
+}
+
+function createProvider(
+  ai: string,
+  model: string | undefined,
+  env: Record<string, string | undefined>,
+): AiProvider {
+  if (ai === "anthropic") {
+    return createAnthropicProvider({
+      apiKey: env["ANTHROPIC_API_KEY"],
+      ...(model ? { model } : {}),
+    });
+  }
+  return createClaudeCliProvider({ env, ...(model ? { model } : {}) });
 }
 
 async function withGitHub(
