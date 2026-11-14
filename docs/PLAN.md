@@ -58,12 +58,14 @@ Split into two parts reviewed separately.
 - Every claim must cite pack IDs; one retry, then the plain timeline instead of unchecked claims
 - `--explain` in the CLI; answers cached. See decision 0006 for real results
 
-### 4b: Accuracy
+### 4b: Accuracy (trail part done)
 
 - Eval set: 30 lines from Express, Flask and React chosen by a fixed random seed
-- True origins found independently (`git log -S` and reading diffs), reviewed by Zain
-- Scores: origin accuracy, drift, citation validity, rubric-graded explanation quality
-- Choose the similarity cut-off for unrelated one-line replacements from the data
+- True origins found independently (`git log --follow -S` and reading diffs), for Zain to review
+- Result: origin 20/30 (67%), latest change 30/30, no wrong paths (decision 0007)
+- Similarity cut-off for unrelated one-line replacements chosen from the data: 0.5
+- **Deferred to the end:** grading the AI explanations on the same 30 lines, once Zain connects
+  his own Claude plan to the `claude` CLI
 
 **Done when:** the README reports a measured accuracy score.
 

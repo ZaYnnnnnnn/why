@@ -6,7 +6,7 @@
 connects every change to its pull request and the issues behind it, then writes a short timeline
 that links to every source it used.
 
-> **Status:** under construction, Phase 4a of 8 done (AI explanations); 4b (accuracy) next. See the [roadmap](#roadmap).
+> **Status:** under construction, Phase 4 of 8 done. Next: the web demo. See the [roadmap](#roadmap).
 
 ## What it will look like
 
@@ -25,6 +25,23 @@ Sources: 3 pull requests, 2 issues, 5 commits
 
 _This output is an illustration of the goal, not real data._
 
+## Accuracy
+
+Measured on 30 lines from Express, Flask and React, picked at random and labelled by hand with a
+different method from the one `why` uses (see [`eval/`](eval)):
+
+| Measure                                              | Result          |
+| ---------------------------------------------------- | --------------- |
+| Trail ends at the true origin                        | **20/30 (67%)** |
+| Newest step is the last commit that touched the line | 30/30           |
+| Trail follows the wrong line                         | 0/30            |
+| Time per line                                        | median 0.6 s    |
+
+It handles renames, identical lines elsewhere in a file and multi-line statements. It does not yet
+follow code that was copied to a new file, lines that were split during reformatting, or a line
+that was reverted and re-landed; those are the misses. Details in
+[decision 0007](docs/decisions/0007-measuring-accuracy.md).
+
 ## How it works
 
 _To be written in Phase 6._
@@ -35,7 +52,7 @@ _To be written in Phase 6._
 - [x] **Phase 1:** trace a line through edits in one file (CLI)
 - [x] **Phase 2:** follow the line across moves and renames
 - [x] **Phase 3:** connect commits to pull requests and issues
-- [ ] **Phase 4:** AI explanation with citations, plus a measured accuracy score
+- [x] **Phase 4:** AI explanation with citations, plus a measured accuracy score
 - [ ] **Phase 5:** web demo with pre-generated answers for well-known repos
 - [ ] **Phase 6:** launch
 - [ ] **Phase 7:** VS Code extension (also works in Cursor and Windsurf)

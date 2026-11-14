@@ -6,7 +6,7 @@
 Origin correct: 20/30 (67%)
 Latest change correct: 30/30 (100%)
 Misses: 8 stopped early, 2 went too far, 0 wrong path
-Time per line: median 571 ms, slowest 1626 ms
+Time per line: median 558 ms, slowest 1707 ms
 
 By tag:
   copied: 0/2
@@ -18,38 +18,39 @@ By tag:
   moved within file: 0/1
   multi-line statement: 2/2
   reformatted: 1/3
+  reverted and re-landed: 0/1
   rewritten: 0/2
 ```
 
 | Case       | Line                                                                  | Origin        | Latest | Steps | ms   | Tags                                       |
 | ---------- | --------------------------------------------------------------------- | ------------- | ------ | ----- | ---- | ------------------------------------------ |
-| express-01 | `lib/application.js:76`                                               | stopped early | yes    | 2     | 571  | moved between files, edited                |
-| express-02 | `lib/application.js:210`                                              | yes           | yes    | 2     | 254  | edited                                     |
+| express-01 | `lib/application.js:76`                                               | stopped early | yes    | 2     | 564  | moved between files, edited                |
+| express-02 | `lib/application.js:210`                                              | yes           | yes    | 2     | 258  | edited                                     |
 | express-03 | `lib/application.js:217`                                              | yes           | yes    | 2     | 381  | identical line elsewhere                   |
-| express-04 | `lib/application.js:322`                                              | stopped early | yes    | 2     | 389  | copied, moved between files, edited        |
-| express-05 | `lib/application.js:526`                                              | yes           | yes    | 2     | 331  | edited                                     |
-| express-06 | `lib/response.js:183`                                                 | stopped early | yes    | 2     | 334  | copied, edited                             |
+| express-04 | `lib/application.js:322`                                              | stopped early | yes    | 2     | 380  | copied, moved between files, edited        |
+| express-05 | `lib/application.js:526`                                              | yes           | yes    | 2     | 325  | edited                                     |
+| express-06 | `lib/response.js:183`                                                 | stopped early | yes    | 2     | 337  | copied, edited                             |
 | express-07 | `lib/response.js:295`                                                 | yes           | yes    | 1     | 279  |                                            |
-| express-08 | `lib/response.js:509`                                                 | stopped early | yes    | 1     | 279  | rewritten                                  |
-| express-09 | `lib/response.js:766`                                                 | went too far  | yes    | 3     | 620  |                                            |
-| express-10 | `lib/utils.js:102`                                                    | yes           | yes    | 1     | 251  |                                            |
-| flask-01   | `src/flask/app.py:50`                                                 | stopped early | yes    | 3     | 857  | reformatted                                |
-| flask-02   | `src/flask/app.py:60`                                                 | stopped early | yes    | 1     | 413  | moved within file, edited                  |
-| flask-03   | `src/flask/app.py:814`                                                | yes           | yes    | 1     | 610  | docstring                                  |
-| flask-04   | `src/flask/cli.py:322`                                                | yes           | yes    | 1     | 326  |                                            |
-| flask-05   | `src/flask/cli.py:1012`                                               | stopped early | yes    | 3     | 440  | reformatted, edited                        |
+| express-08 | `lib/response.js:509`                                                 | stopped early | yes    | 1     | 285  | rewritten                                  |
+| express-09 | `lib/response.js:766`                                                 | went too far  | yes    | 3     | 609  |                                            |
+| express-10 | `lib/utils.js:102`                                                    | yes           | yes    | 1     | 250  |                                            |
+| flask-01   | `src/flask/app.py:50`                                                 | stopped early | yes    | 3     | 864  | reformatted                                |
+| flask-02   | `src/flask/app.py:60`                                                 | stopped early | yes    | 1     | 411  | moved within file, edited                  |
+| flask-03   | `src/flask/app.py:814`                                                | yes           | yes    | 1     | 435  | docstring                                  |
+| flask-04   | `src/flask/cli.py:322`                                                | yes           | yes    | 1     | 337  |                                            |
+| flask-05   | `src/flask/cli.py:1012`                                               | stopped early | yes    | 3     | 429  | reformatted, edited                        |
 | flask-06   | `src/flask/cli.py:1044`                                               | yes           | yes    | 2     | 366  | edited                                     |
-| flask-07   | `src/flask/debughelpers.py:28`                                        | yes           | yes    | 2     | 296  | edited                                     |
-| flask-08   | `src/flask/helpers.py:259`                                            | yes           | yes    | 2     | 435  | docstring, edited                          |
-| flask-09   | `src/flask/sansio/app.py:519`                                         | yes           | yes    | 5     | 662  | edited                                     |
-| flask-10   | `src/flask/typing.py:54`                                              | went too far  | yes    | 4     | 555  | rewritten                                  |
-| react-01   | `packages/react-dom-bindings/src/client/CSSPropertyOperations.js:127` | yes           | yes    | 3     | 1483 | file renamed, edited                       |
-| react-02   | `packages/react-dom-bindings/src/client/ReactFiberConfigDOM.js:3484`  | yes           | yes    | 1     | 878  | identical line elsewhere                   |
-| react-03   | `packages/react-dom-bindings/src/server/ReactFizzConfigDOM.js:5801`   | yes           | yes    | 2     | 1199 | edited                                     |
-| react-04   | `packages/react-reconciler/src/ReactFiberBeginWork.js:1641`           | yes           | yes    | 1     | 1075 |                                            |
-| react-05   | `packages/react-reconciler/src/ReactFiberHooks.js:136`                | yes           | yes    | 4     | 1615 | file renamed, edited, multi-line statement |
-| react-06   | `packages/react-reconciler/src/ReactFiberHooks.js:4038`               | yes           | yes    | 2     | 1592 | identical line elsewhere, reformatted      |
-| react-07   | `packages/react-reconciler/src/ReactFiberThrow.js:70`                 | yes           | yes    | 1     | 898  | file renamed, multi-line statement         |
-| react-08   | `packages/react/src/ReactCacheClient.js:29`                           | yes           | yes    | 3     | 1626 | identical line elsewhere                   |
-| react-09   | `packages/react/src/jsx/ReactJSXElement.js:899`                       | yes           | yes    | 1     | 801  |                                            |
-| react-10   | `packages/scheduler/src/SchedulerProfiling.js:105`                    | stopped early | yes    | 2     | 776  | edited                                     |
+| flask-07   | `src/flask/debughelpers.py:28`                                        | yes           | yes    | 2     | 297  | edited                                     |
+| flask-08   | `src/flask/helpers.py:259`                                            | yes           | yes    | 2     | 443  | docstring, edited                          |
+| flask-09   | `src/flask/sansio/app.py:519`                                         | yes           | yes    | 5     | 654  | edited                                     |
+| flask-10   | `src/flask/typing.py:54`                                              | went too far  | yes    | 4     | 558  | rewritten                                  |
+| react-01   | `packages/react-dom-bindings/src/client/CSSPropertyOperations.js:127` | yes           | yes    | 3     | 1479 | file renamed, edited                       |
+| react-02   | `packages/react-dom-bindings/src/client/ReactFiberConfigDOM.js:3484`  | yes           | yes    | 1     | 796  | identical line elsewhere                   |
+| react-03   | `packages/react-dom-bindings/src/server/ReactFizzConfigDOM.js:5801`   | yes           | yes    | 2     | 1183 | edited                                     |
+| react-04   | `packages/react-reconciler/src/ReactFiberBeginWork.js:1641`           | yes           | yes    | 1     | 1053 |                                            |
+| react-05   | `packages/react-reconciler/src/ReactFiberHooks.js:136`                | yes           | yes    | 4     | 1707 | file renamed, edited, multi-line statement |
+| react-06   | `packages/react-reconciler/src/ReactFiberHooks.js:4038`               | yes           | yes    | 2     | 1591 | identical line elsewhere, reformatted      |
+| react-07   | `packages/react-reconciler/src/ReactFiberThrow.js:70`                 | yes           | yes    | 1     | 904  | file renamed, multi-line statement         |
+| react-08   | `packages/react/src/ReactCacheClient.js:29`                           | yes           | yes    | 3     | 1634 | identical line elsewhere                   |
+| react-09   | `packages/react/src/jsx/ReactJSXElement.js:899`                       | yes           | yes    | 1     | 790  |                                            |
+| react-10   | `packages/scheduler/src/SchedulerProfiling.js:105`                    | stopped early | yes    | 2     | 782  | edited, reverted and re-landed             |

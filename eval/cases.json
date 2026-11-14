@@ -356,7 +356,7 @@
     "text": "      logEvent([TaskCompleteEvent, ms * 1000, task.id]);",
     "origin": "a34ca7bce69c2f321daef0b8650ad6e7cfce366a",
     "latest": "cd1b167ad40c5c62cf2a0b32451fe2aebb669d08",
-    "tags": ["edited"],
-    "note": "Added with scheduler profiling. The microsecond precision change is cd1b167ad4."
+    "tags": ["edited", "reverted and re-landed"],
+    "note": "Added with scheduler profiling (#16145), reverted the next day (4ba1412305) and re-landed as the 'second try' (0f6e3cd61c, #16542). The microsecond precision change is cd1b167ad4."
   }
 ]
