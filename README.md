@@ -6,7 +6,7 @@
 connects every change to its pull request and the issues behind it, then writes a short timeline
 that links to every source it used.
 
-> **Status:** under construction, Phase 0 of 8. See the [roadmap](#roadmap).
+> **Status:** under construction, Phase 1 of 8 done. See the [roadmap](#roadmap).
 
 ## What it will look like
 
@@ -31,8 +31,8 @@ _To be written in Phase 6._
 
 ## Roadmap
 
-- [ ] **Phase 0:** repo setup, CI, test-repo generator
-- [ ] **Phase 1:** trace a line through edits in one file (CLI)
+- [x] **Phase 0:** repo setup, CI, test-repo generator
+- [x] **Phase 1:** trace a line through edits in one file (CLI)
 - [ ] **Phase 2:** follow the line across moves and renames
 - [ ] **Phase 3:** connect commits to pull requests and issues
 - [ ] **Phase 4:** AI explanation with citations, plus a measured accuracy score
@@ -49,6 +49,15 @@ Requires Node 22.18+ and pnpm.
 pnpm install
 pnpm check
 ```
+
+Try the CLI from inside any git repository:
+
+```bash
+node /path/to/why/apps/cli/src/main.ts lib/response.js:65
+```
+
+Options: `--json` for machine-readable output, `--rev <rev>` to start from an older commit,
+`--repo <path>` to run against another folder.
 
 `pnpm check` runs lint, formatting, type checks and tests. Design decisions are recorded in
 [`docs/decisions`](docs/decisions).

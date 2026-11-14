@@ -28,6 +28,10 @@ through `claude -p` locally, and the public demo serves pre-generated answers.
 - File renamed or moved: continue in the old path
 - Code moved to another file: find the enclosing function with tree-sitter, search the commit
   for its origin, use `git blame -C` as a helper
+- False origins: when a block is rewritten (for example reformatted), `git log -L` can report the
+  line as newly added. Check whether a similar line existed in the parent commit and continue the
+  trail from there. Real case from Phase 1: Express `lib/response.js` `res.status` stops at a 2011
+  "misc" commit instead of "Added chainable res.status(code)"
 
 **Done when:** a line in React traces back past at least one large refactor.
 
