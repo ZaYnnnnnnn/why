@@ -33,6 +33,12 @@ function repo(): TestRepo {
   return r;
 }
 
+function cacheHome(): string {
+  const dir = mkdtempSync(join(tmpdir(), "why-cache-"));
+  cleanups.push(() => rmSync(dir, { recursive: true, force: true }));
+  return dir;
+}
+
 function fakeIo(cwd: string, overrides: Partial<Io> = {}) {
   const out: string[] = [];
   const err: string[] = [];
@@ -40,7 +46,10 @@ function fakeIo(cwd: string, overrides: Partial<Io> = {}) {
     stdout: { write: (text) => out.push(text) },
     stderr: { write: (text) => err.push(text) },
     cwd,
-    env: {},
+    env: { XDG_CACHE_HOME: cacheHome() },
+    fetch: (async () => {
+      throw new Error("unexpected network call");
+    }) as typeof fetch,
     ...overrides,
   };
   return { io, stdout: () => out.join(""), stderr: () => err.join("") };

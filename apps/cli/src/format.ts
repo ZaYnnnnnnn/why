@@ -1,14 +1,25 @@
 import { styleText } from "node:util";
-import type { LineChange, LineHistory } from "@why/core";
+import type {
+  ChangeEvidence,
+  GitHubRepo,
+  IssueEvidence,
+  LineChange,
+  LineHistory,
+  LinkedHistory,
+} from "@why/core";
 
 type Style = Parameters<typeof styleText>[0];
+type Paint = (style: Style, text: string) => string;
 
 export interface FormatOptions {
   color: boolean;
 }
 
-export function formatHistory(history: LineHistory, options: FormatOptions): string {
-  const paint = (style: Style, text: string) =>
+export function formatHistory(
+  history: LineHistory | LinkedHistory,
+  options: FormatOptions,
+): string {
+  const paint: Paint = (style, text) =>
     options.color ? styleText(style, text, { validateStream: false }) : text;
 
   const location = `${history.path}:${history.line}`;
@@ -24,6 +35,8 @@ export function formatHistory(history: LineHistory, options: FormatOptions): str
     return lines.join("\n");
   }
   lines.push(paint("dim", `${count} change${count === 1 ? "" : "s"}, newest first`), "");
+
+  const github = "github" in history ? history.github : undefined;
 
   for (const change of history.changes) {
     lines.push(
@@ -44,10 +57,69 @@ export function formatHistory(history: LineHistory, options: FormatOptions): str
       const places = change.possibleOrigins.map((o) => `${o.path}:${o.lineNumber}`).join(" or ");
       lines.push(paint("dim", `  may have been moved from ${places}`));
     }
+
+    if (github && "evidence" in change) {
+      lines.push(...formatEvidence(change.evidence as ChangeEvidence, github, paint));
+    }
     lines.push("");
   }
 
+  if (github) lines.push(paint("dim", summary(history as LinkedHistory)), "");
+
   return lines.join("\n");
+}
+
+function formatEvidence(evidence: ChangeEvidence, github: GitHubRepo, paint: Paint): string[] {
+  const lines: string[] = [];
+  const pr = evidence.pullRequest;
+
+  if (pr) {
+    const when = pr.mergedAt ? `merged ${pr.mergedAt.slice(0, 10)}` : pr.state;
+    lines.push(
+      `  ${paint("cyan", `PR #${pr.number}`)}  ${pr.title}  ${paint("dim", `(${when}, @${pr.author})`)}`,
+    );
+    for (const review of pr.reviewComments) {
+      lines.push(paint("dim", `    review @${review.author}: ${firstLine(review.body)}`));
+    }
+  }
+
+  for (const issue of evidence.issues) {
+    lines.push(
+      `  ${paint("cyan", `${issue.link} ${issueLabel(issue, github)}`)}  ${issue.title}  ${paint("dim", `(${issue.state})`)}`,
+    );
+  }
+
+  return lines;
+}
+
+function issueLabel(issue: IssueEvidence, github: GitHubRepo): string {
+  const same =
+    issue.owner.toLowerCase() === github.owner.toLowerCase() &&
+    issue.repo.toLowerCase() === github.repo.toLowerCase();
+  const ref = `${same ? "" : `${issue.owner}/${issue.repo}`}#${issue.number}`;
+  return issue.isPullRequest ? `PR ${ref}` : ref;
+}
+
+function summary(history: LinkedHistory): string {
+  const pulls = new Set<number>();
+  const issues = new Set<string>();
+  for (const change of history.changes) {
+    if (change.evidence.pullRequest) pulls.add(change.evidence.pullRequest.number);
+    for (const issue of change.evidence.issues) {
+      issues.add(`${issue.owner}/${issue.repo}#${issue.number}`);
+    }
+  }
+  const plural = (n: number, word: string) => `${n} ${word}${n === 1 ? "" : "s"}`;
+  return `Sources: ${plural(history.changes.length, "commit")}, ${plural(pulls.size, "pull request")}, ${plural(issues.size, "issue")}`;
+}
+
+function firstLine(text: string): string {
+  const line =
+    text
+      .split("\n")
+      .find((l) => l.trim() !== "")
+      ?.trim() ?? "";
+  return line.length > 100 ? `${line.slice(0, 99).trimEnd()}…` : line;
 }
 
 function describe(change: LineChange, currentPath: string): string {
