@@ -1,5 +1,12 @@
 export type WhyErrorCode =
-  "NOT_A_REPO" | "FILE_NOT_FOUND" | "LINE_OUT_OF_RANGE" | "INVALID_ARGUMENT" | "GIT_FAILED";
+  | "NOT_A_REPO"
+  | "FILE_NOT_FOUND"
+  | "LINE_OUT_OF_RANGE"
+  | "INVALID_ARGUMENT"
+  | "GIT_FAILED"
+  | "GITHUB_NOT_FOUND"
+  | "GITHUB_RATE_LIMITED"
+  | "GITHUB_FAILED";
 
 export class WhyError extends Error {
   readonly code: WhyErrorCode;
