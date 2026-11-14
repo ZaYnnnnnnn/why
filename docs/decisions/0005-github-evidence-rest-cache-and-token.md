@@ -66,13 +66,15 @@ three times with growing delays.
 
 ## Results on real projects
 
-| Line                                      | Evidence found                                                                                                                                            |
-| ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Express `lib/response.js:72` (RangeError) | PR #4212 with 5 review comments on the file, including "Should we continue `JSON.stringify` here…"; closes #3143, which is itself an earlier pull request |
-| Express `lib/response.js:65` (res.status) | 2015 step: PR #2682 "Release 4.13", now marked as a batch of 40 commits; the 2011 steps predate pull requests and correctly have no evidence              |
+| Line                                           | Evidence found                                                                                                                                            |
+| ---------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Express `lib/response.js:72` (RangeError)      | PR #4212 with 5 review comments on the file, including "Should we continue `JSON.stringify` here…"; closes #3143, which is itself an earlier pull request |
+| Express `lib/response.js:65` (res.status)      | 2015 step: PR #2682 "Release 4.13", now marked as a batch of 40 commits; the 2011 steps predate pull requests and correctly have no evidence              |
+| Flask `src/flask/app.py:1261` (url_for anchor) | Both steps of the move to the app object link to PR #4580 "Move url_for to the Flask app object", which closes #4568                                      |
+| Flask `src/flask/blueprints.py:78`             | 8 steps, 6 pull requests; cross-repository links such as pallets/werkzeug#1850 are followed                                                               |
 
-Both traces together used about 22 of the 60 unauthenticated requests; rerunning them from the cache
-used none. Flask was not checked live with GitHub in this phase because the hourly limit ran out.
+The two Express traces used about 22 of the 60 unauthenticated requests; rerunning them from the
+cache used none. The two Flask traces were run later with a read-only token and used 38 of 5,000.
 
 ## Consequences
 

@@ -44,7 +44,7 @@ now reaches its real origin past a 2011 move; Flask traces past its 2019 move to
 - JSON file cache; rate-limit handling with retry and backoff; optional `GITHUB_TOKEN`
 
 **Done:** the CLI shows the evidence timeline without AI (decision 0005). Checked live on two
-Express lines; Flask not checked live with GitHub because the hourly limit ran out.
+Express lines without a token and two Flask lines with one.
 
 ## Phase 4: AI explanation and accuracy
 

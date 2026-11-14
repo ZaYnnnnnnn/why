@@ -64,7 +64,10 @@ to `src/` are followed through the rename.
 
 - **Unrelated one-line replacements.** Git calls a line "changed" even when the old text is
   unrelated. Express 214f913 ("merge") replaced `res.send = require('response-send');` with
-  `this.end(head ? null : body);` while restoring older code. Ending trails at such steps needs a
-  similarity threshold, which should be chosen from measured cases, not guessed.
+  `this.end(head ? null : body);` while restoring older code. Flask 1759d8e ("Added support for
+  anchor link generation") added `if anchor is not None:`, but git pairs it with the unrelated
+  `return ctx.url_adapter.build(...)` line it pushed down, so the trail continues into 2010 code.
+  Ending trails at such steps needs a similarity threshold, which should be chosen from measured
+  cases, not guessed.
 - **Copies.** Code copied to a new file while the original stays (Express 3d597a5 copied
   `lib/express/*` to `lib/` and deleted the originals in a later commit) is not followed yet.
