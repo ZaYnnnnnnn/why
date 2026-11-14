@@ -33,6 +33,16 @@ importers:
         specifier: ^5.1.0
         version: 5.1.0(@types/node@26.6.6)(vite@8.3.8(@types/node@26.6.6))
 
+  apps/cli:
+    dependencies:
+      '@why/core':
+        specifier: workspace:*
+        version: link:../../packages/core
+    devDependencies:
+      '@why/testkit':
+        specifier: workspace:*
+        version: link:../../packages/testkit
+
   packages/core:
     devDependencies:
       '@why/testkit':

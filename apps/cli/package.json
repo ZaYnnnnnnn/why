@@ -1,0 +1,15 @@
+{
+  "name": "@why/cli",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "bin": {
+    "why": "./src/main.ts"
+  },
+  "dependencies": {
+    "@why/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@why/testkit": "workspace:*"
+  }
+}
