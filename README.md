@@ -6,7 +6,7 @@
 connects every change to its pull request and the issues behind it, then writes a short timeline
 that links to every source it used.
 
-> **Status:** under construction, Phase 1 of 8 done. See the [roadmap](#roadmap).
+> **Status:** under construction, Phase 2 of 8 done. See the [roadmap](#roadmap).
 
 ## What it will look like
 
@@ -33,7 +33,7 @@ _To be written in Phase 6._
 
 - [x] **Phase 0:** repo setup, CI, test-repo generator
 - [x] **Phase 1:** trace a line through edits in one file (CLI)
-- [ ] **Phase 2:** follow the line across moves and renames
+- [x] **Phase 2:** follow the line across moves and renames
 - [ ] **Phase 3:** connect commits to pull requests and issues
 - [ ] **Phase 4:** AI explanation with citations, plus a measured accuracy score
 - [ ] **Phase 5:** web demo with pre-generated answers for well-known repos

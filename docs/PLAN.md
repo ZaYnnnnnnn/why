@@ -25,15 +25,16 @@ through `claude -p` locally, and the public demo serves pre-generated answers.
 
 ## Phase 2: Follow the line across moves and renames
 
-- File renamed or moved: continue in the old path
-- Code moved to another file: find the enclosing function with tree-sitter, search the commit
-  for its origin, use `git blame -C` as a helper
-- False origins: when a block is rewritten (for example reformatted), `git log -L` can report the
-  line as newly added. Check whether a similar line existed in the parent commit and continue the
-  trail from there. Real case from Phase 1: Express `lib/response.js` `res.status` stops at a 2011
-  "misc" commit instead of "Added chainable res.status(code)"
+- File renamed or moved: `git log -L` already follows renames; tested and shown in the CLI
+- Code moved to another file or another spot in the same file: our own move detection
+  (`findMovedFrom`), matching removed lines plus their neighbours. tree-sitter and
+  `git blame -C` were dropped; see decision 0004
+- Keep traces on one line when `git log -L` widens the tracked range (found while testing)
 
-**Done when:** a line in React traces back past at least one large refactor.
+**Done:** tested on Express and Flask instead of React (React's full history is a very large
+clone; it stays in scope for the Phase 4 accuracy set and the Phase 5 demo). Express `res.status`
+now reaches its real origin past a 2011 move; Flask traces past its 2019 move to `src/` and its
+2021 and 2023 refactors. Open questions for Phase 4 are listed in decision 0004.
 
 ## Phase 3: Commit to pull request to issues
 
