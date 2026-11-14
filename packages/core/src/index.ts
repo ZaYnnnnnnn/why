@@ -8,6 +8,16 @@ export { defaultCacheDir, fileCache, memoryCache } from "./github/cache.ts";
 export type { Cache, CacheEntry } from "./github/cache.ts";
 export { createGitHubClient, FOREVER, ONE_WEEK } from "./github/client.ts";
 export type { GetOptions, GitHubClient, GitHubClientOptions } from "./github/client.ts";
+export { linkHistory, LIMITS, truncate } from "./github/linkHistory.ts";
+export type {
+  ChangeEvidence,
+  CommentEvidence,
+  IssueEvidence,
+  LinkedChange,
+  LinkedHistory,
+  LinkOptions,
+  PullRequestEvidence,
+} from "./github/linkHistory.ts";
 export { findIssueRefs } from "./github/refs.ts";
 export type { IssueLink, IssueRef } from "./github/refs.ts";
 export { findGitHubRepo, parseGitHubRemote, parseRepoSlug } from "./github/remote.ts";

@@ -13,7 +13,7 @@ export interface GitHubClientOptions {
 }
 
 export interface GetOptions {
-  maxAgeMs: number;
+  maxAgeMs: number | ((cached: unknown) => number);
 }
 
 export interface GitHubClient {
@@ -51,7 +51,10 @@ export function createGitHubClient(options: GitHubClientOptions = {}): GitHubCli
 
     if (!refresh) {
       const cached = await cache.get(path);
-      if (cached && now() - cached.storedAt <= maxAgeMs) return cached.value as T;
+      const limit = cached && (typeof maxAgeMs === "function" ? maxAgeMs(cached.value) : maxAgeMs);
+      if (cached && limit !== undefined && now() - cached.storedAt <= limit) {
+        return cached.value as T;
+      }
     }
 
     for (let attempt = 1; ; attempt += 1) {

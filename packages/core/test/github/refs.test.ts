@@ -64,6 +64,7 @@ describe("findIssueRefs", () => {
     ["markdown headings", "## 2 Changes"],
     ["issue zero", "#0"],
     ["other GitHub pages", "https://github.com/expressjs/express/commit/123"],
+    ["dot-only names", "see ../..#5 and https://github.com/../x/issues/3"],
   ])("ignores %s", (_name, text) => {
     expect(refs(text)).toEqual([]);
   });

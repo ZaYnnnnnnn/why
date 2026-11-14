@@ -88,6 +88,21 @@ describe("GitHub client", () => {
     expect(calls).toHaveLength(2);
   });
 
+  it("lets the caller choose how long an answer stays fresh based on its content", async () => {
+    const { fetch, calls } = fakeFetch({ body: [] }, { body: [{ number: 7 }] });
+    const cache = memoryCache();
+    let now = NOW;
+    const c = createGitHubClient({ fetch, cache, now: () => now });
+    const maxAgeMs = (value: unknown) => ((value as unknown[]).length > 0 ? FOREVER : 1000);
+
+    expect(await c.get("/pulls", { maxAgeMs })).toEqual([]);
+    now += 1001;
+    expect(await c.get("/pulls", { maxAgeMs })).toEqual([{ number: 7 }]);
+    now += ONE_WEEK * 52;
+    expect(await c.get("/pulls", { maxAgeMs })).toEqual([{ number: 7 }]);
+    expect(calls).toHaveLength(2);
+  });
+
   it("skips cached answers when refreshing but still stores new ones", async () => {
     const { fetch, calls } = fakeFetch({ body: { n: 1 } }, { body: { n: 2 } });
     const cache = memoryCache();

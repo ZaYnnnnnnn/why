@@ -31,6 +31,7 @@ export function findIssueRefs(text: string, self: GitHubRepo): IssueRef[] {
         : { ...self, number: Number(shortNumber ?? ghNumber) };
 
     if (!Number.isSafeInteger(ref.number) || ref.number < 1) continue;
+    if (isDotsOnly(ref.owner) || isDotsOnly(ref.repo)) continue;
 
     const before = text.slice(Math.max(0, match.index - 20), match.index);
     const link: IssueLink = CLOSING_KEYWORD.test(before) ? "closes" : "mentions";
@@ -42,4 +43,8 @@ export function findIssueRefs(text: string, self: GitHubRepo): IssueRef[] {
   }
 
   return [...found.values()];
+}
+
+function isDotsOnly(name: string): boolean {
+  return /^\.+$/.test(name);
 }
