@@ -1,0 +1,30 @@
+[
+  {
+    "name": "express",
+    "url": "https://github.com/expressjs/express.git",
+    "commit": "43fca52d28a422c8be48fd489cbd4f2d6152bab6",
+    "sourceDirs": ["lib"],
+    "extensions": [".js"]
+  },
+  {
+    "name": "flask",
+    "url": "https://github.com/pallets/flask.git",
+    "commit": "49943b5a94413a530761350f04e896f76e8d620e",
+    "sourceDirs": ["src/flask"],
+    "extensions": [".py"]
+  },
+  {
+    "name": "react",
+    "url": "https://github.com/react/react.git",
+    "commit": "df6aa4ec76cff5b3adde531c6fe8c36099e0469b",
+    "sourceDirs": [
+      "packages/react/src",
+      "packages/react-reconciler/src",
+      "packages/react-dom/src",
+      "packages/react-dom-bindings/src",
+      "packages/scheduler/src",
+      "packages/shared"
+    ],
+    "extensions": [".js"]
+  }
+]
