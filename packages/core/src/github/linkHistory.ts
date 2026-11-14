@@ -18,6 +18,8 @@ export interface PullRequestEvidence {
   author: string;
   state: "merged" | "closed" | "open";
   mergedAt?: string;
+  commitCount?: number;
+  batch: boolean;
   body: string;
   reviewComments: CommentEvidence[];
 }
@@ -60,6 +62,7 @@ export const LIMITS = {
   commentChars: 1000,
   commentsPerItem: 5,
   issuesPerChange: 5,
+  batchCommits: 20,
 };
 
 interface ApiUser {
@@ -74,6 +77,7 @@ interface ApiPull {
   user: ApiUser | null;
   state: "open" | "closed";
   merged_at: string | null;
+  commits?: number;
 }
 
 interface ApiComment {
@@ -178,7 +182,8 @@ export async function linkHistory(
     const pull = number === undefined ? undefined : await getPull(number);
     const pullRequest = pull && (await toPullRequest(pull, change.path));
 
-    const text = [change.subject, change.body, pull?.title ?? "", pull?.body ?? ""].join("\n");
+    const fromPull = pull && !pullRequest?.batch ? [pull.title, pull.body ?? ""] : [];
+    const text = [change.subject, change.body, ...fromPull].join("\n");
     const refs = findIssueRefs(text, repo)
       .filter((ref) => !(pull && sameRepo(ref, repo) && ref.number === pull.number))
       .slice(0, LIMITS.issuesPerChange);
@@ -205,6 +210,8 @@ export async function linkHistory(
       author: login(pull.user),
       state: pull.merged_at ? "merged" : pull.state,
       ...(pull.merged_at ? { mergedAt: pull.merged_at } : {}),
+      ...(pull.commits !== undefined ? { commitCount: pull.commits } : {}),
+      batch: (pull.commits ?? 0) > LIMITS.batchCommits,
       body: truncate(pull.body, LIMITS.bodyChars),
       reviewComments: onThisFile.map(toComment),
     };

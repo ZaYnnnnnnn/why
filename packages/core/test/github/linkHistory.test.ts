@@ -244,6 +244,44 @@ describe("linkHistory", () => {
     expect(linked.warnings[0]).toMatch(/^GitHub rate limit reached/);
   });
 
+  it("does not attach issue links from a release PR that bundles many commits", async () => {
+    const { client, calls } = fakeGitHub({
+      [`${BASE}/commits/rel/pulls`]: [pull(2682)],
+      [`${BASE}/pulls/2682`]: pull(2682, {
+        title: "Release 4.13",
+        commits: 40,
+        body: "Fixes #2667\nFixes #2617",
+      }),
+      [`${BASE}/pulls/2682/comments?per_page=100`]: [],
+      [`${BASE}/issues/9`]: issue(9),
+    });
+
+    const linked = await linkHistory(
+      history(change("rel", { subject: "perf: remove reassignments", body: "Refs #9" })),
+      { repo: REPO, client },
+    );
+    const evidence = linked.changes[0]!.evidence;
+
+    expect(evidence.pullRequest).toMatchObject({ number: 2682, batch: true, commitCount: 40 });
+    expect(evidence.issues.map((i) => i.number)).toEqual([9]);
+    expect(calls.some((c) => c.includes("/issues/2667"))).toBe(false);
+  });
+
+  it("still reads issue links from a normal-sized PR", async () => {
+    const { client } = fakeGitHub({
+      [`${BASE}/commits/small/pulls`]: [pull(5)],
+      [`${BASE}/pulls/5`]: pull(5, { commits: 20, body: "Fixes #6" }),
+      [`${BASE}/pulls/5/comments?per_page=100`]: [],
+      [`${BASE}/issues/6`]: issue(6),
+    });
+
+    const evidence = (await linkHistory(history(change("small")), { repo: REPO, client }))
+      .changes[0]!.evidence;
+
+    expect(evidence.pullRequest).toMatchObject({ batch: false, commitCount: 20 });
+    expect(evidence.issues.map((i) => i.number)).toEqual([6]);
+  });
+
   it("caps long descriptions and comments", async () => {
     const { client } = fakeGitHub({
       [`${BASE}/commits/hhh/pulls`]: [pull(2)],

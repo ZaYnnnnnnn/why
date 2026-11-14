@@ -75,8 +75,9 @@ function formatEvidence(evidence: ChangeEvidence, github: GitHubRepo, paint: Pai
 
   if (pr) {
     const when = pr.mergedAt ? `merged ${pr.mergedAt.slice(0, 10)}` : pr.state;
+    const batch = pr.batch ? `, batch of ${pr.commitCount} commits` : "";
     lines.push(
-      `  ${paint("cyan", `PR #${pr.number}`)}  ${pr.title}  ${paint("dim", `(${when}, @${pr.author})`)}`,
+      `  ${paint("cyan", `PR #${pr.number}`)}  ${pr.title}  ${paint("dim", `(${when}, @${pr.author}${batch})`)}`,
     );
     for (const review of pr.reviewComments) {
       lines.push(paint("dim", `    review @${review.author}: ${firstLine(review.body)}`));
