@@ -1,4 +1,6 @@
 export { WhyError, isWhyError } from "./errors.ts";
+export { createAnthropicProvider, DEFAULT_ANTHROPIC_MODEL } from "./explain/anthropicApi.ts";
+export type { AnthropicApiOptions } from "./explain/anthropicApi.ts";
 export { createClaudeCliProvider, runCommand } from "./explain/claudeCli.ts";
 export type { ClaudeCliOptions, RunCommand, RunOptions, RunResult } from "./explain/claudeCli.ts";
 export {
