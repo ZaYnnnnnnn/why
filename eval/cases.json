@@ -7,7 +7,7 @@
     "line": 76,
     "text": "          strict: this.enabled('strict routing')",
     "origin": "6f7075be740c26c4c1f3c3e8df4c3472e4907561",
-    "latest": "f41d09a3cf0592b65a1359495b65d3d7cf949c50",
+    "latest": "509ebb1aff11749a9608f2a1ed2117766800d883",
     "tags": ["moved between files", "edited"],
     "note": "Strict routing setting added in lib/router/index.js. c0c1975d moved reading it into application.js (app.enabled became this.enabled), and f41d09a reshaped it into the Router options."
   },
@@ -67,7 +67,7 @@
     "line": 183,
     "text": "      this.set('Content-Length', len);",
     "origin": "874975da5451ddd29fe309b1a13cfb32891b73cb",
-    "latest": "a58e3deac27fca9ddbb7e389fdfe7be3aebea639",
+    "latest": "9a34acf03cb818ff3f8bc40e44176e277a25cbb9",
     "tags": ["copied", "edited"],
     "note": "res.send has set Content-Length since 2010 (headers['Content-Length'] = ...). Followed through the lib/express to lib copy (3d597a55) and several rewrites."
   },
@@ -129,7 +129,7 @@
     "origin": "e71a5ff8de93801c30ed6daecac4b8502aa86813",
     "latest": "43483683b2bc8da85f00ccccdfb8d9d5c77a6bb3",
     "tags": ["reformatted"],
-    "note": "app.py first imported request_tearing_down in 2011. Black and reorder-python-imports (2019) only reformatted the import list into one line per name."
+    "note": "app.py first imported request_tearing_down in 2011. Black and reorder-python-imports (2019) only reformatted the import list into one line per name. Latest set by hand: git blame credits the 2023 App/Sansio split (0ec7f71) because git pairs the old app.py with sansio/app.py and this short line is below blame's 40-character copy threshold, but the line stayed in src/flask/app.py unchanged."
   },
   {
     "id": "flask-02",
@@ -141,7 +141,7 @@
     "origin": "cf5525f98a2a9a15f6bb93b050dfd43f2bd90d97",
     "latest": "77237093da25438c88b0a74c374a397d4bf823eb",
     "tags": ["moved within file", "edited"],
-    "note": "Import added with test_cli_runner inside the method, moved to the top of the module in 2019, type hints in 2021."
+    "note": "Import added with test_cli_runner inside the method, moved to the top of the module in 2019, type hints in 2021. Latest set by hand: git blame credits the 2023 App/Sansio split (0ec7f71) because git pairs the old app.py with sansio/app.py and this short line is below blame's 40-character copy threshold, but the line stayed in src/flask/app.py unchanged."
   },
   {
     "id": "flask-03",
@@ -331,7 +331,7 @@
     "line": 29,
     "text": "  return function () {",
     "origin": "5c607369ceebe56d85175df84b7b6ad58dd25e1f",
-    "latest": "5c607369ceebe56d85175df84b7b6ad58dd25e1f",
+    "latest": "a1ace9d3c2a0fc53703f11e30f32d0a009c5a8c9",
     "tags": ["identical line elsewhere"],
     "note": "New file with the client version of cache(). The server version was renamed, not copied."
   },

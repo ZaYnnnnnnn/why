@@ -14,7 +14,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "check": "pnpm lint && pnpm format:check && pnpm typecheck && pnpm test",
-    "eval:sample": "node eval/sample.ts"
+    "eval:sample": "node eval/sample.ts",
+    "eval": "node eval/run.ts"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

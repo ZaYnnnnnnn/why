@@ -27,8 +27,10 @@ the file.
 - **`origin`**: the commit where the line first appeared doing its current job. Follow it back
   through edits, renames, moves and copies, however much the text changed. Stop when the older
   text did something unrelated.
-- **`latest`**: the commit that introduced the line's exact current text, which should be the
-  newest step of a trace.
+- **`latest`**: the newest commit that changed the line in any way, including indentation, taken
+  from `git blame -M -C -C` so that lines moved or copied without changes keep their real author.
+  Two short Flask import lines were set by hand, because blame only recognises copies of 40 or
+  more characters (their notes explain). It should be the newest step of a trace.
 - **`tags`**: what makes the case hard, for example `copied`, `moved between files`,
   `identical line elsewhere`, `reformatted`.
 - **`note`**: one or two sentences explaining the decision.
