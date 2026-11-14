@@ -76,6 +76,20 @@ describe("why CLI", () => {
     );
   });
 
+  it("shows the old file name on steps from before a rename", async () => {
+    const r = createRepo([
+      { message: "create", files: { "util.js": "value = 1\n" } },
+      { message: "rename", renames: { "util.js": "lib/helpers.js" } },
+      { message: "edit", files: { "lib/helpers.js": "value = 2\n" } },
+    ]);
+    cleanups.push(r.cleanup);
+    const { io, stdout } = fakeIo(r.path);
+
+    expect(await run(["lib/helpers.js:1"], io)).toBe(EXIT_OK);
+    expect(stdout()).toContain("  changed at line 1\n");
+    expect(stdout()).toContain("  added at line 1 in util.js\n");
+  });
+
   it("prints JSON with --json", async () => {
     const r = repo();
     const { io, stdout } = fakeIo(r.path);

@@ -120,6 +120,24 @@ describe("traceLine", () => {
     ]);
   });
 
+  it("follows the line through file renames and records the path at each step", async () => {
+    const repo = make([
+      { message: "create", files: { "util.js": "a\nvalue = 1\n" } },
+      { message: "edit", files: { "util.js": "a\nvalue = 2\n" } },
+      { message: "rename", renames: { "util.js": "lib/helpers.js" } },
+      { message: "rename again", renames: { "lib/helpers.js": "src/lib/values.js" } },
+      { message: "edit after rename", files: { "src/lib/values.js": "a\nvalue = 3\n" } },
+    ]);
+
+    const history = await traceLine({ cwd: repo.path, file: "src/lib/values.js", line: 2 });
+
+    expect(history.changes.map((c) => [c.subject, c.path])).toEqual([
+      ["edit after rename", "src/lib/values.js"],
+      ["edit", "util.js"],
+      ["create", "util.js"],
+    ]);
+  });
+
   it("works from a nested folder with a relative path", async () => {
     const repo = make([{ message: "create", files: { "src/lib/x.ts": "x\n" } }]);
 
