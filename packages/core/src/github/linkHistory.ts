@@ -180,7 +180,7 @@ export async function linkHistory(
   async function evidenceFor(change: LineChange): Promise<ChangeEvidence> {
     const number = await findPullNumber(change);
     const pull = number === undefined ? undefined : await getPull(number);
-    const pullRequest = pull && (await toPullRequest(pull, change.path));
+    const pullRequest = pull && (await toPullRequest(pull, change));
 
     const fromPull = pull && !pullRequest?.batch ? [pull.title, pull.body ?? ""] : [];
     const text = [change.subject, change.body, ...fromPull].join("\n");
@@ -197,7 +197,8 @@ export async function linkHistory(
     return { ...(pullRequest ? { pullRequest } : {}), issues: linked };
   }
 
-  async function toPullRequest(pull: ApiPull, path: string): Promise<PullRequestEvidence> {
+  async function toPullRequest(pull: ApiPull, change: LineChange): Promise<PullRequestEvidence> {
+    const path = change.path;
     const onThisFile = (await getReviews(pull.number))
       .filter((comment) => comment.path === path)
       .sort((a, b) => a.created_at.localeCompare(b.created_at))
@@ -211,7 +212,7 @@ export async function linkHistory(
       state: pull.merged_at ? "merged" : pull.state,
       ...(pull.merged_at ? { mergedAt: pull.merged_at } : {}),
       ...(pull.commits !== undefined ? { commitCount: pull.commits } : {}),
-      batch: (pull.commits ?? 0) > LIMITS.batchCommits,
+      batch: (pull.commits ?? 0) > LIMITS.batchCommits && !mentionsPull(change, pull.number),
       body: truncate(pull.body, LIMITS.bodyChars),
       reviewComments: onThisFile.map(toComment),
     };
@@ -254,6 +255,10 @@ function toComment(comment: ApiComment): CommentEvidence {
     url: comment.html_url,
     createdAt: comment.created_at,
   };
+}
+
+function mentionsPull(change: LineChange, number: number): boolean {
+  return new RegExp(`#${number}(?!\\d)`).test(`${change.subject}\n${change.body}`);
 }
 
 function login(user: ApiUser | null): string {

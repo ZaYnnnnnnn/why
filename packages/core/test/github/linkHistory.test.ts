@@ -267,6 +267,28 @@ describe("linkHistory", () => {
     expect(calls.some((c) => c.includes("/issues/2667"))).toBe(false);
   });
 
+  it("does not treat a long feature PR as a batch when the commit is that PR's squash merge", async () => {
+    const { client } = fakeGitHub({
+      [`${BASE}/commits/sq/pulls`]: [pull(4212)],
+      [`${BASE}/pulls/4212`]: pull(4212, { commits: 30, body: "Closes #3143" }),
+      [`${BASE}/pulls/4212/comments?per_page=100`]: [],
+      [`${BASE}/issues/3143`]: issue(3143),
+    });
+
+    const evidence = (
+      await linkHistory(
+        history(change("sq", { subject: "Throw on invalid status codes (#4212)" })),
+        {
+          repo: REPO,
+          client,
+        },
+      )
+    ).changes[0]!.evidence;
+
+    expect(evidence.pullRequest).toMatchObject({ batch: false, commitCount: 30 });
+    expect(evidence.issues.map((i) => i.number)).toEqual([3143]);
+  });
+
   it("still reads issue links from a normal-sized PR", async () => {
     const { client } = fakeGitHub({
       [`${BASE}/commits/small/pulls`]: [pull(5)],

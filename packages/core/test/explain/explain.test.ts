@@ -90,6 +90,12 @@ describe("explainHistory", () => {
     expect(requests[0]!.prompt).toMatch(/Valid source IDs: C1, C2$/);
   });
 
+  it("tells the model to keep evidence IDs out of the readable text", () => {
+    expect(SYSTEM_PROMPT).toContain(
+      'never put IDs such as C1 or PR1 inside "summary", "timeline" text or "gaps"',
+    );
+  });
+
   it("retries once with the reasons when citations point at missing evidence", async () => {
     const bad = { ...good, timeline: [{ text: "Fixed a bug", cites: ["PR7"] }] };
     const { provider, requests } = fakeProvider(bad, good);

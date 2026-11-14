@@ -6,7 +6,7 @@ import type { LineHistory } from "../traceLine.ts";
 import { buildEvidencePack, type EvidenceSource } from "./pack.ts";
 import type { AiProvider } from "./provider.ts";
 
-export const PROMPT_VERSION = "1";
+export const PROMPT_VERSION = "2";
 
 export type Confidence = "high" | "medium" | "low";
 
@@ -51,6 +51,7 @@ Rules:
 - "timeline": the meaningful steps, oldest first, one short sentence each. Leave out steps that only moved or reformatted the line unless the move itself matters.
 - "confidence": "high" when a pull request, review or issue states the reason, "medium" when only commit messages do, "low" when you are inferring.
 - A pull request marked as a batch covers many unrelated changes; do not read its description as the reason for this line.
+- Write for people, not for the evidence format: never put IDs such as C1 or PR1 inside "summary", "timeline" text or "gaps". Put them only in "summaryCites" and "cites". Refer to commits, pull requests and issues by what they did.
 - Write plain, short English sentences.`;
 
 export const EXPLANATION_SCHEMA = {

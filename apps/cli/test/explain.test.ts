@@ -138,6 +138,27 @@ describe("why --explain", () => {
     expect(stderr()).toBe("");
   });
 
+  it("turns IDs written inside the text into readable labels and drops repeated labels", async () => {
+    const r = repo();
+    const { provider } = fakeProvider({
+      summary: "It was added for chaining (C2) and renamed later (C1, PR1).",
+      summaryCites: ["C2", "C1"],
+      timeline: [{ text: "PR1 merged the change.", cites: ["PR1", "PR1", "C1"] }],
+      confidence: "medium",
+      gaps: ["I1 does not say why 999."],
+    });
+    const { io: value, stdout } = io(r, { provider });
+
+    await run(["lib/response.js:2", "--explain"], value);
+    const short = (i: number) => r.commits[i]!.slice(0, 7);
+
+    expect(stdout()).toContain(
+      `  It was added for chaining and renamed later. (${short(0)}, ${short(1)})`,
+    );
+    expect(stdout()).toContain(`  - PR #4212 merged the change. (PR #4212, ${short(1)})`);
+    expect(stdout()).toContain("  Not in the evidence: #3143 does not say why 999.");
+  });
+
   it("includes the explanation in --json output", async () => {
     const r = repo();
     const { provider } = fakeProvider(answer);

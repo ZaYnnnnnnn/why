@@ -82,17 +82,27 @@ function formatExplanation(
 ): string[] {
   const labels = new Map(result.sources.map((source) => [source.id, citeLabel(source, github)]));
   const cite = (ids: string[]) =>
-    paint("dim", `(${ids.map((id) => labels.get(id) ?? id).join(", ")})`);
+    paint("dim", `(${[...new Set(ids.map((id) => labels.get(id) ?? id))].join(", ")})`);
+  const readable = (text: string) =>
+    text
+      .replace(/\s*\(((?:C|PR|R|I)\d+(?:\s*,\s*(?:C|PR|R|I)\d+)*)\)/g, (match, list: string) =>
+        list.split(/\s*,\s*/).every((id) => labels.has(id)) ? "" : match,
+      )
+      .replace(/\b(?:C|PR|R|I)\d+\b/g, (id) => labels.get(id) ?? id);
   const { explanation } = result;
 
   const lines = [
     paint("bold", "Why"),
-    `  ${explanation.summary} ${cite(explanation.summaryCites)}`,
+    `  ${readable(explanation.summary)} ${cite(explanation.summaryCites)}`,
     "",
   ];
-  for (const entry of explanation.timeline) lines.push(`  - ${entry.text} ${cite(entry.cites)}`);
+  for (const entry of explanation.timeline) {
+    lines.push(`  - ${readable(entry.text)} ${cite(entry.cites)}`);
+  }
   lines.push("", paint("dim", `  Confidence: ${explanation.confidence}`));
-  for (const gap of explanation.gaps) lines.push(paint("dim", `  Not in the evidence: ${gap}`));
+  for (const gap of explanation.gaps) {
+    lines.push(paint("dim", `  Not in the evidence: ${readable(gap)}`));
+  }
   const model = result.model === "default" ? "" : ` ${result.model}`;
   lines.push(
     paint("dim", `  Explained by ${result.provider}${model}${result.cached ? " (cached)" : ""}`),
