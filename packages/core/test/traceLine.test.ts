@@ -309,3 +309,98 @@ describe("traceLine across moves", () => {
     expect(history.changes[0]).not.toHaveProperty("possibleOrigins");
   });
 });
+
+describe("traceLine stays on one line", () => {
+  const text = (...lines: string[]) => `${lines.join("\n")}\n`;
+
+  it("does not drift onto neighbouring lines after a block was collapsed into this line", async () => {
+    const repo = make([
+      {
+        message: "create",
+        files: {
+          "a.js": text(
+            "start();",
+            "send(body, headers, status);",
+            "mergeHeaders(headers);",
+            "end();",
+          ),
+        },
+      },
+      {
+        message: "edit neighbour",
+        files: {
+          "a.js": text(
+            "start();",
+            "send(body, headers, status);",
+            "mergeHeaders(headers, true);",
+            "end();",
+          ),
+        },
+      },
+      { message: "collapse", files: { "a.js": text("start();", "send(body, status);", "end();") } },
+    ]);
+
+    const history = await traceLine({ cwd: repo.path, file: "a.js", line: 2 });
+
+    expect(history.changes.map((c) => [c.subject, c.kind, c.before, c.after])).toEqual([
+      ["collapse", "modified", ["send(body, headers, status);"], ["send(body, status);"]],
+      ["create", "added", [], ["send(body, headers, status);"]],
+    ]);
+  });
+
+  it("follows the matching line when it was not the first line of the collapsed block", async () => {
+    const repo = make([
+      {
+        message: "create",
+        files: {
+          "a.js": text("start();", "prepare(items);", "const total = sum(items, tax);", "end();"),
+        },
+      },
+      {
+        message: "edit target",
+        files: {
+          "a.js": text("start();", "prepare(items);", "const total = sum(items, rate);", "end();"),
+        },
+      },
+      {
+        message: "edit neighbour",
+        files: {
+          "a.js": text(
+            "start();",
+            "prepare(items, true);",
+            "const total = sum(items, rate);",
+            "end();",
+          ),
+        },
+      },
+      {
+        message: "collapse",
+        files: { "a.js": text("start();", "const total = sum(items);", "end();") },
+      },
+    ]);
+
+    const history = await traceLine({ cwd: repo.path, file: "a.js", line: 2 });
+
+    expect(history.changes.map((c) => c.subject)).toEqual(["collapse", "edit target", "create"]);
+    expect(history.changes[0]!.before).toEqual(["const total = sum(items, rate);"]);
+  });
+
+  it("ends the trail when the line replaced unrelated code", async () => {
+    const repo = make([
+      { message: "create", files: { "a.js": text("start();", "alpha();", "beta();", "end();") } },
+      {
+        message: "rewrite",
+        files: { "a.js": text("start();", "const total = computeTotal(items);", "end();") },
+      },
+    ]);
+
+    const history = await traceLine({ cwd: repo.path, file: "a.js", line: 2 });
+
+    expect(history.changes).toHaveLength(1);
+    expect(history.changes[0]).toMatchObject({
+      subject: "rewrite",
+      kind: "modified",
+      before: ["alpha();", "beta();"],
+    });
+  });
+});

@@ -1,6 +1,6 @@
 import { WhyError } from "./errors.ts";
 import { parseDiffPath, readFileAt } from "./files.ts";
-import { findMovedFrom, type SourceLocation } from "./findMovedFrom.ts";
+import { findMovedFrom, normalize, similarity, type SourceLocation } from "./findMovedFrom.ts";
 import { runGit } from "./git.ts";
 import { findRepoRoot, toRepoPath } from "./repo.ts";
 
@@ -42,7 +42,8 @@ const RECORD = "\x1e";
 const FIELD = "\x1f";
 const LOG_FORMAT = `${RECORD}%H${FIELD}%an${FIELD}%ae${FIELD}%at${FIELD}%s${FIELD}%b${FIELD}`;
 const HUNK_HEADER = /^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@/;
-const MAX_MOVES = 20;
+const MAX_STEPS = 50;
+const NARROW_THRESHOLD = 0.5;
 
 export async function traceLine(options: TraceOptions): Promise<LineHistory> {
   const { file, line, cwd = process.cwd(), rev = "HEAD" } = options;
@@ -86,39 +87,80 @@ interface Position {
 async function followLine(root: string, start: Position): Promise<LineChange[]> {
   const changes: LineChange[] = [];
   const visited = new Set<string>();
-  let position = start;
+  let position: Position | undefined = start;
 
-  for (let moves = 0; ; moves += 1) {
-    const segment = parseLineLog(await lineLog(root, position));
-    changes.push(...segment);
-
-    const origin = segment.at(-1);
-    if (!origin || origin.kind !== "added" || moves >= MAX_MOVES || visited.has(origin.commit)) {
-      return changes;
-    }
-    visited.add(origin.commit);
-
-    const move = await findMovedFrom(root, {
-      commit: origin.commit,
-      path: origin.path,
-      lineNumber: origin.lineNumber,
-      text: origin.after[0] ?? "",
-    });
-
-    if (move.status === "none") return changes;
-    if (move.status === "ambiguous") {
-      changes[changes.length - 1] = { ...origin, possibleOrigins: move.candidates };
-      return changes;
-    }
-
-    changes[changes.length - 1] = {
-      ...origin,
-      kind: "moved",
-      before: [move.text],
-      movedFrom: move.from,
-    };
-    position = { rev: `${origin.commit}^`, path: move.from.path, line: move.from.lineNumber };
+  for (let steps = 0; position && steps < MAX_STEPS; steps += 1) {
+    const key = `${position.rev}:${position.path}:${position.line}`;
+    if (visited.has(key)) break;
+    visited.add(key);
+    position = await followSegment(root, position, changes);
   }
+
+  return changes;
+}
+
+async function followSegment(
+  root: string,
+  position: Position,
+  changes: LineChange[],
+): Promise<Position | undefined> {
+  const entries = parseEntries(await lineLog(root, position));
+
+  for (const entry of entries) {
+    const { change } = entry;
+    if (change.before.length <= 1) {
+      changes.push(change);
+      continue;
+    }
+
+    const narrowed = narrowToOneLine(entry);
+    if (!narrowed) {
+      changes.push(change);
+      return undefined;
+    }
+    changes.push({ ...change, before: [narrowed.text] });
+    return { rev: `${change.commit}^`, path: entry.oldPath, line: narrowed.lineNumber };
+  }
+
+  const origin = entries.at(-1)?.change;
+  if (!origin || origin.kind !== "added") return undefined;
+
+  const move = await findMovedFrom(root, {
+    commit: origin.commit,
+    path: origin.path,
+    lineNumber: origin.lineNumber,
+    text: origin.after[0] ?? "",
+  });
+
+  if (move.status === "none") return undefined;
+  if (move.status === "ambiguous") {
+    changes[changes.length - 1] = { ...origin, possibleOrigins: move.candidates };
+    return undefined;
+  }
+
+  changes[changes.length - 1] = {
+    ...origin,
+    kind: "moved",
+    before: [move.text],
+    movedFrom: move.from,
+  };
+  return { rev: `${origin.commit}^`, path: move.from.path, line: move.from.lineNumber };
+}
+
+function narrowToOneLine(entry: LogEntry): { text: string; lineNumber: number } | undefined {
+  const target = normalize(entry.change.after[0] ?? "");
+  let best: { text: string; lineNumber: number; score: number } | undefined;
+
+  entry.change.before.forEach((text, index) => {
+    const score = similarity(normalize(text), target);
+    const lineNumber = entry.beforeLineNumbers[index];
+    if (lineNumber !== undefined && (!best || score > best.score)) {
+      best = { text, lineNumber, score };
+    }
+  });
+
+  if (!best || best.score < NARROW_THRESHOLD) return undefined;
+  return { text: best.text, lineNumber: best.lineNumber };
 }
 
 function lineLog(root: string, { rev, path, line }: Position): Promise<string> {
@@ -133,13 +175,23 @@ function lineLog(root: string, { rev, path, line }: Position): Promise<string> {
 }
 
 export function parseLineLog(output: string): LineChange[] {
+  return parseEntries(output).map((entry) => entry.change);
+}
+
+interface LogEntry {
+  change: LineChange;
+  oldPath: string;
+  beforeLineNumbers: number[];
+}
+
+function parseEntries(output: string): LogEntry[] {
   return output
     .split(RECORD)
     .filter((record) => record.trim() !== "")
     .map(parseRecord);
 }
 
-function parseRecord(record: string): LineChange {
+function parseRecord(record: string): LogEntry {
   const fields = record.split(FIELD);
   if (fields.length < 7) {
     throw new WhyError("GIT_FAILED", "Unexpected git log output");
@@ -156,50 +208,72 @@ function parseRecord(record: string): LineChange {
   const hunk = parseDiff(diff);
 
   return {
-    commit,
-    authorName,
-    authorEmail,
-    date: new Date(Number(timestamp) * 1000).toISOString(),
-    subject,
-    body: body.trim(),
-    path: hunk.path,
-    lineNumber: hunk.lineNumber,
-    kind: hunk.before.length === 0 ? "added" : "modified",
-    before: hunk.before,
-    after: hunk.after,
+    change: {
+      commit,
+      authorName,
+      authorEmail,
+      date: new Date(Number(timestamp) * 1000).toISOString(),
+      subject,
+      body: body.trim(),
+      path: hunk.path,
+      lineNumber: hunk.lineNumber,
+      kind: hunk.before.length === 0 ? "added" : "modified",
+      before: hunk.before,
+      after: hunk.after,
+    },
+    oldPath: hunk.oldPath || hunk.path,
+    beforeLineNumbers: hunk.beforeLineNumbers,
   };
 }
 
 interface ParsedDiff {
   path: string;
+  oldPath: string;
   lineNumber: number;
   before: string[];
+  beforeLineNumbers: number[];
   after: string[];
 }
 
 function parseDiff(diff: string): ParsedDiff {
-  const result: ParsedDiff = { path: "", lineNumber: 0, before: [], after: [] };
+  const result: ParsedDiff = {
+    path: "",
+    oldPath: "",
+    lineNumber: 0,
+    before: [],
+    beforeLineNumbers: [],
+    after: [],
+  };
   let inHunk = false;
+  let oldLine = 0;
 
   for (const raw of diff.split("\n")) {
-    if (!inHunk) {
-      const header = HUNK_HEADER.exec(raw);
-      if (header) {
-        inHunk = true;
-        result.lineNumber = Number(header[3]);
-      } else if (raw.startsWith("+++ ")) {
-        result.path = parseDiffPath(raw);
-      } else if (raw.startsWith("--- ") && result.path === "") {
-        result.path = parseDiffPath(raw);
-      }
+    const header = HUNK_HEADER.exec(raw);
+    if (header) {
+      if (!inHunk) result.lineNumber = Number(header[3]);
+      inHunk = true;
+      oldLine = Number(header[1]);
       continue;
     }
 
-    if (HUNK_HEADER.test(raw)) continue;
-    if (raw.startsWith("-")) result.before.push(raw.slice(1));
-    else if (raw.startsWith("+")) result.after.push(raw.slice(1));
+    if (!inHunk) {
+      if (raw.startsWith("+++ ")) result.path = parseDiffPath(raw);
+      else if (raw.startsWith("--- ")) result.oldPath = parseDiffPath(raw);
+      continue;
+    }
+
+    if (raw.startsWith("-")) {
+      result.before.push(raw.slice(1));
+      result.beforeLineNumbers.push(oldLine);
+      oldLine += 1;
+    } else if (raw.startsWith("+")) {
+      result.after.push(raw.slice(1));
+    } else if (raw.startsWith(" ")) {
+      oldLine += 1;
+    }
   }
 
+  if (result.path === "") result.path = result.oldPath;
   return result;
 }
 
