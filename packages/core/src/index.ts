@@ -1,4 +1,6 @@
 export { WhyError, isWhyError } from "./errors.ts";
+export { buildEvidencePack, DEFAULT_PACK_CHARS } from "./explain/pack.ts";
+export type { EvidencePack, EvidenceSource, PackOptions, SourceKind } from "./explain/pack.ts";
 export type { WhyErrorCode } from "./errors.ts";
 export { runGit } from "./git.ts";
 export { findRepoRoot, toRepoPath } from "./repo.ts";
