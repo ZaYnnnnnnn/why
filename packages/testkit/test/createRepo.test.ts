@@ -66,8 +66,9 @@ describe("createRepo", () => {
       },
     ]);
 
-    expect(repo.git("log", "-1", "--format=%an <%ae> %aI")).toBe(
-      "Ada <ada@example.com> 2015-06-01T12:00:00+00:00",
+    const timestamp = Date.parse("2015-06-01T12:00:00Z") / 1000;
+    expect(repo.git("log", "-1", "--format=%an <%ae> %at")).toBe(
+      `Ada <ada@example.com> ${timestamp}`,
     );
   });
 
