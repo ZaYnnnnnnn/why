@@ -4,5 +4,7 @@ export { runGit } from "./git.ts";
 export { findRepoRoot, toRepoPath } from "./repo.ts";
 export { findMovedFrom } from "./findMovedFrom.ts";
 export type { MoveMatch, MoveResult, MoveTarget, SourceLocation } from "./findMovedFrom.ts";
+export { findGitHubRepo, parseGitHubRemote, parseRepoSlug } from "./github/remote.ts";
+export type { GitHubRepo } from "./github/remote.ts";
 export { parseLineLog, traceLine } from "./traceLine.ts";
 export type { ChangeKind, LineChange, LineHistory, TraceOptions } from "./traceLine.ts";
