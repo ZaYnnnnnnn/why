@@ -38,11 +38,13 @@ now reaches its real origin past a 2011 move; Flask traces past its 2019 move to
 
 ## Phase 3: Commit to pull request to issues
 
-- Commit → pull request (GitHub API) → description, key review comments, linked issues
-- Issue description and top comments
-- JSON file cache; rate-limit handling with retry and backoff
+- Commit → pull request (GitHub REST API) → description, review comments on the traced file,
+  linked issues (closes / mentions) with their first comments
+- Release pull requests with more than 20 commits are shown but their issue links are skipped
+- JSON file cache; rate-limit handling with retry and backoff; optional `GITHUB_TOKEN`
 
-**Done when:** the CLI shows the full evidence timeline without AI.
+**Done:** the CLI shows the evidence timeline without AI (decision 0005). Checked live on two
+Express lines; Flask not checked live with GitHub because the hourly limit ran out.
 
 ## Phase 4: AI explanation and accuracy
 

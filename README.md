@@ -6,7 +6,7 @@
 connects every change to its pull request and the issues behind it, then writes a short timeline
 that links to every source it used.
 
-> **Status:** under construction, Phase 2 of 8 done. See the [roadmap](#roadmap).
+> **Status:** under construction, Phase 3 of 8 done. See the [roadmap](#roadmap).
 
 ## What it will look like
 
@@ -34,7 +34,7 @@ _To be written in Phase 6._
 - [x] **Phase 0:** repo setup, CI, test-repo generator
 - [x] **Phase 1:** trace a line through edits in one file (CLI)
 - [x] **Phase 2:** follow the line across moves and renames
-- [ ] **Phase 3:** connect commits to pull requests and issues
+- [x] **Phase 3:** connect commits to pull requests and issues
 - [ ] **Phase 4:** AI explanation with citations, plus a measured accuracy score
 - [ ] **Phase 5:** web demo with pre-generated answers for well-known repos
 - [ ] **Phase 6:** launch
@@ -57,7 +57,13 @@ node /path/to/why/apps/cli/src/main.ts lib/response.js:65
 ```
 
 Options: `--json` for machine-readable output, `--rev <rev>` to start from an older commit,
-`--repo <path>` to run against another folder.
+`--repo <path>` to run against another folder, `--github <owner/repo>` to choose the GitHub
+repository, `--no-github` for git history only, `--refresh` to ignore cached GitHub answers.
+
+When the repository is on GitHub, each step also shows its pull request, reviewers' comments on
+that file and the issues it closes or mentions. It works without setup (GitHub allows 60 requests
+an hour); set `GITHUB_TOKEN` to a read-only token for 5,000. Answers are cached in
+`~/.cache/why/github`.
 
 `pnpm check` runs lint, formatting, type checks and tests. Design decisions are recorded in
 [`docs/decisions`](docs/decisions).
