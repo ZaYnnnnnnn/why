@@ -6,7 +6,7 @@
 connects every change to its pull request and the issues behind it, then writes a short timeline
 that links to every source it used.
 
-> **Status:** under construction, Phase 3 of 8 done. See the [roadmap](#roadmap).
+> **Status:** under construction, Phase 4a of 8 done (AI explanations); 4b (accuracy) next. See the [roadmap](#roadmap).
 
 ## What it will look like
 
@@ -64,6 +64,25 @@ When the repository is on GitHub, each step also shows its pull request, reviewe
 that file and the issues it closes or mentions. It works without setup (GitHub allows 60 requests
 an hour); set `GITHUB_TOKEN` to a read-only token for 5,000. Answers are cached in
 `~/.cache/why/github`.
+
+Add `--explain` for a short AI explanation above the timeline. Every claim must cite the evidence
+it comes from, the model lists what the evidence does not say instead of guessing, and an answer
+that fails these checks is not shown. It uses your own Claude Code sign-in (`claude -p`) by
+default, or `--ai anthropic` with `ANTHROPIC_API_KEY`.
+
+```text
+$ why lib/response.js:72 --explain
+
+Why
+  This line makes res.status throw a RangeError when the status code is below 100 or above 999.
+  Node.js itself throws outside that range, and Express 5 wanted to catch such codes up front.
+  Before this, a bad code such as err.code could leave a request hanging. (723b545, PR #4212,
+  PR #3143, review by @blakeembrey on PR #4212)
+
+  Confidence: high
+  Not in the evidence: why the team settled on Node's 100-999 range instead of the 100-599
+  range of standard HTTP status codes.
+```
 
 `pnpm check` runs lint, formatting, type checks and tests. Design decisions are recorded in
 [`docs/decisions`](docs/decisions).

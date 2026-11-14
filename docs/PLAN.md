@@ -48,10 +48,22 @@ Express lines without a token and two Flask lines with one.
 
 ## Phase 4: AI explanation and accuracy
 
-- Evidence bundle with an ID for every item, trimmed to fit the model
-- Swappable provider: `claude -p`, Anthropic API, Gemini, Ollama
-- Citations must reference bundle IDs; anything else is rejected
-- Eval set: 30 hand-checked lines across React, Rails and Next.js, with a scoring script
+Split into two parts reviewed separately.
+
+### 4a: AI explanation (done)
+
+- Evidence pack with an ID for every item, trimmed to fit the model
+- Swappable provider: `claude -p` (default, the user's Claude Code sign-in) and the Anthropic API;
+  Gemini and Ollama only when needed
+- Every claim must cite pack IDs; one retry, then the plain timeline instead of unchecked claims
+- `--explain` in the CLI; answers cached. See decision 0006 for real results
+
+### 4b: Accuracy
+
+- Eval set: 30 lines from Express, Flask and React chosen by a fixed random seed
+- True origins found independently (`git log -S` and reading diffs), reviewed by Zain
+- Scores: origin accuracy, drift, citation validity, rubric-graded explanation quality
+- Choose the similarity cut-off for unrelated one-line replacements from the data
 
 **Done when:** the README reports a measured accuracy score.
 
