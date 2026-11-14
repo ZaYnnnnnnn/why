@@ -1,6 +1,20 @@
 export { WhyError, isWhyError } from "./errors.ts";
 export { createClaudeCliProvider, runCommand } from "./explain/claudeCli.ts";
 export type { ClaudeCliOptions, RunCommand, RunOptions, RunResult } from "./explain/claudeCli.ts";
+export {
+  checkExplanation,
+  explainHistory,
+  EXPLANATION_SCHEMA,
+  PROMPT_VERSION,
+  SYSTEM_PROMPT,
+} from "./explain/explain.ts";
+export type {
+  Confidence,
+  ExplainOptions,
+  ExplainResult,
+  Explanation,
+  TimelineEntry,
+} from "./explain/explain.ts";
 export { buildEvidencePack, DEFAULT_PACK_CHARS } from "./explain/pack.ts";
 export type { AiProvider, CompletionRequest } from "./explain/provider.ts";
 export type { EvidencePack, EvidenceSource, PackOptions, SourceKind } from "./explain/pack.ts";
