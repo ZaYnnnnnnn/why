@@ -6,7 +6,9 @@ export type WhyErrorCode =
   | "GIT_FAILED"
   | "GITHUB_NOT_FOUND"
   | "GITHUB_RATE_LIMITED"
-  | "GITHUB_FAILED";
+  | "GITHUB_FAILED"
+  | "AI_UNAVAILABLE"
+  | "AI_FAILED";
 
 export class WhyError extends Error {
   readonly code: WhyErrorCode;

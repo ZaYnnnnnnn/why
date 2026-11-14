@@ -1,5 +1,8 @@
 export { WhyError, isWhyError } from "./errors.ts";
+export { createClaudeCliProvider, runCommand } from "./explain/claudeCli.ts";
+export type { ClaudeCliOptions, RunCommand, RunOptions, RunResult } from "./explain/claudeCli.ts";
 export { buildEvidencePack, DEFAULT_PACK_CHARS } from "./explain/pack.ts";
+export type { AiProvider, CompletionRequest } from "./explain/provider.ts";
 export type { EvidencePack, EvidenceSource, PackOptions, SourceKind } from "./explain/pack.ts";
 export type { WhyErrorCode } from "./errors.ts";
 export { runGit } from "./git.ts";
