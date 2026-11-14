@@ -2,6 +2,7 @@ import { existsSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 import {
   createClaudeCliProvider,
+  WhyError,
   runCommand,
   type RunCommand,
   type RunOptions,
@@ -121,8 +122,36 @@ describe("claude -p provider", () => {
     );
   });
 
+  it("finds claude in ~/.local/bin when it is not on PATH", async () => {
+    const tried: string[] = [];
+    const run: RunCommand = async (command, _args, options) => {
+      tried.push(command);
+      if (command === "claude") {
+        const missing = Object.assign(new Error("spawn claude ENOENT"), { code: "ENOENT" });
+        throw new WhyError("AI_UNAVAILABLE", "claude was not found", { cause: missing });
+      }
+      expect(options.input).toBe(request.prompt);
+      return { stdout: JSON.stringify({ structured_output: { ok: true } }), stderr: "", code: 0 };
+    };
+    const provider = createClaudeCliProvider({ run, fallbackCommands: [process.execPath] });
+
+    expect(await provider.complete(request)).toEqual({ ok: true });
+    expect(tried).toEqual(["claude", process.execPath]);
+  });
+
+  it("does not look elsewhere when a command was chosen", async () => {
+    const provider = createClaudeCliProvider({
+      command: "why-test-no-such-command-xyz",
+      fallbackCommands: [process.execPath],
+    });
+    await expect(provider.complete(request)).rejects.toMatchObject({ code: "AI_UNAVAILABLE" });
+  });
+
   it("explains a missing claude command", async () => {
-    const provider = createClaudeCliProvider({ command: "why-test-no-such-command-xyz" });
+    const provider = createClaudeCliProvider({
+      command: "why-test-no-such-command-xyz",
+      fallbackCommands: [],
+    });
     await expect(provider.complete(request)).rejects.toMatchObject({ code: "AI_UNAVAILABLE" });
   });
 });

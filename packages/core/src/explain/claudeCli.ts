@@ -1,6 +1,6 @@
 import { spawn } from "node:child_process";
-import { mkdtempSync, rmSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { existsSync, mkdtempSync, rmSync } from "node:fs";
+import { homedir, tmpdir } from "node:os";
 import { join } from "node:path";
 import { WhyError } from "../errors.ts";
 import type { AiProvider, CompletionRequest } from "./provider.ts";
@@ -26,6 +26,7 @@ export type RunCommand = (
 
 export interface ClaudeCliOptions {
   command?: string;
+  fallbackCommands?: string[];
   model?: string;
   timeoutMs?: number;
   env?: NodeJS.ProcessEnv;
@@ -42,7 +43,8 @@ const API_KEY_VARIABLES = ["ANTHROPIC_API_KEY", "ANTHROPIC_AUTH_TOKEN"];
 
 export function createClaudeCliProvider(options: ClaudeCliOptions = {}): AiProvider {
   const {
-    command = "claude",
+    command,
+    fallbackCommands = [join(homedir(), ".local", "bin", "claude")],
     model,
     timeoutMs = 180_000,
     env = process.env,
@@ -71,7 +73,11 @@ export function createClaudeCliProvider(options: ClaudeCliOptions = {}): AiProvi
     const cwd = mkdtempSync(join(tmpdir(), "why-claude-"));
     let result: RunResult;
     try {
-      result = await run(command, args, { input: request.prompt, cwd, env: childEnv, timeoutMs });
+      result = await runFirstAvailable(
+        command ? [command] : ["claude", ...fallbackCommands.filter((path) => existsSync(path))],
+        (candidate) =>
+          run(candidate, args, { input: request.prompt, cwd, env: childEnv, timeoutMs }),
+      );
     } finally {
       rmSync(cwd, { recursive: true, force: true });
     }
@@ -105,6 +111,26 @@ export function createClaudeCliProvider(options: ClaudeCliOptions = {}): AiProvi
   }
 
   return { name: "claude-cli", model: model ?? "default", complete };
+}
+
+async function runFirstAvailable(
+  commands: string[],
+  attempt: (command: string) => Promise<RunResult>,
+): Promise<RunResult> {
+  let missing: unknown;
+  for (const candidate of commands) {
+    try {
+      return await attempt(candidate);
+    } catch (error) {
+      const notFound =
+        error instanceof WhyError &&
+        error.code === "AI_UNAVAILABLE" &&
+        (error.cause as NodeJS.ErrnoException | undefined)?.code === "ENOENT";
+      if (!notFound) throw error;
+      missing = error;
+    }
+  }
+  throw missing;
 }
 
 export function runCommand(
