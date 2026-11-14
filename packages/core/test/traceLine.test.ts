@@ -209,3 +209,103 @@ describe("traceLine", () => {
     });
   });
 });
+
+describe("traceLine across moves", () => {
+  const fn = (n: number) => ["function target() {", `  return compute(${n});`, "}"];
+  const block = [
+    "const a = 1;",
+    "const b = 2;",
+    "const c = 3;",
+    "const d = 4;",
+    "const e = 5;",
+    "const f = 6;",
+    "const g = 7;",
+    "const h = 8;",
+  ];
+  const text = (...lines: string[]) => `${lines.join("\n")}\n`;
+
+  it("follows a line through a move to another file and a move inside that file", async () => {
+    const repo = make([
+      {
+        message: "create in a.js",
+        files: { "a.js": text("header();", "", ...fn(1), "", "footer();") },
+      },
+      {
+        message: "edit in a.js",
+        files: { "a.js": text("header();", "", ...fn(2), "", "footer();") },
+      },
+      {
+        message: "move to b.js",
+        files: {
+          "a.js": text("header();", "", "footer();"),
+          "b.js": text("import x;", "", ...fn(2), "", ...block),
+        },
+      },
+      { message: "edit in b.js", files: { "b.js": text("import x;", "", ...fn(3), "", ...block) } },
+      { message: "reorder b.js", files: { "b.js": text("import x;", "", ...block, "", ...fn(3)) } },
+    ]);
+
+    const history = await traceLine({ cwd: repo.path, file: "b.js", line: 13 });
+
+    expect(
+      history.changes.map((c) => [c.subject, c.kind, c.path, c.lineNumber, c.movedFrom]),
+    ).toEqual([
+      ["reorder b.js", "moved", "b.js", 13, { path: "b.js", lineNumber: 4 }],
+      ["edit in b.js", "modified", "b.js", 4, undefined],
+      ["move to b.js", "moved", "b.js", 4, { path: "a.js", lineNumber: 4 }],
+      ["edit in a.js", "modified", "a.js", 4, undefined],
+      ["create in a.js", "added", "a.js", 4, undefined],
+    ]);
+    expect(history.changes[2]).toMatchObject({
+      before: ["  return compute(2);"],
+      after: ["  return compute(2);"],
+    });
+  });
+
+  it("stops and lists both places when a move source is ambiguous", async () => {
+    const shared = text("first();", "const shared = makeThing(1);", "last();");
+    const repo = make([
+      { message: "create", files: { "a.js": shared, "b.js": shared } },
+      {
+        message: "merge files",
+        files: {
+          "a.js": null,
+          "b.js": null,
+          "c.js": text(
+            "alpha();",
+            "beta();",
+            "gamma();",
+            "const shared = makeThing(1);",
+            "delta();",
+          ),
+        },
+      },
+    ]);
+
+    const history = await traceLine({ cwd: repo.path, file: "c.js", line: 4 });
+
+    expect(history.changes).toHaveLength(1);
+    expect(history.changes[0]).toMatchObject({
+      subject: "merge files",
+      kind: "added",
+      possibleOrigins: [
+        { path: "a.js", lineNumber: 2 },
+        { path: "b.js", lineNumber: 2 },
+      ],
+    });
+  });
+
+  it("leaves a genuinely new line as added", async () => {
+    const repo = make([
+      { message: "create", files: { "a.js": text("keep();") } },
+      { message: "add line", files: { "a.js": text("keep();", "const fresh = brandNewThing();") } },
+    ]);
+
+    const history = await traceLine({ cwd: repo.path, file: "a.js", line: 2 });
+
+    expect(history.changes).toHaveLength(1);
+    expect(history.changes[0]).toMatchObject({ kind: "added" });
+    expect(history.changes[0]).not.toHaveProperty("movedFrom");
+    expect(history.changes[0]).not.toHaveProperty("possibleOrigins");
+  });
+});

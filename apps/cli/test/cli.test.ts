@@ -90,6 +90,22 @@ describe("why CLI", () => {
     expect(stdout()).toContain("  added at line 1 in util.js\n");
   });
 
+  it("shows where a moved line came from", async () => {
+    const fn = ["function target() {", "  return compute(1);", "}"];
+    const r = createRepo([
+      { message: "create", files: { "a.js": `keep();\n${fn.join("\n")}\n` } },
+      { message: "extract target", files: { "a.js": "keep();\n", "b.js": `${fn.join("\n")}\n` } },
+    ]);
+    cleanups.push(r.cleanup);
+    const { io, stdout } = fakeIo(r.path);
+
+    expect(await run(["b.js:2"], io)).toBe(EXIT_OK);
+    expect(stdout()).toContain(
+      ["  extract target", "  moved to line 2 from a.js:3", "", ""].join("\n"),
+    );
+    expect(stdout()).toContain("  added at line 3 in a.js\n  +   return compute(1);\n");
+  });
+
   it("prints JSON with --json", async () => {
     const r = repo();
     const { io, stdout } = fakeIo(r.path);

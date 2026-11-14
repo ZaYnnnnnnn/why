@@ -1,5 +1,6 @@
 import { WhyError } from "./errors.ts";
 import { parseDiffPath, readFileAt } from "./files.ts";
+import { findMovedFrom, type SourceLocation } from "./findMovedFrom.ts";
 import { runGit } from "./git.ts";
 import { findRepoRoot, toRepoPath } from "./repo.ts";
 
@@ -10,7 +11,7 @@ export interface TraceOptions {
   rev?: string;
 }
 
-export type ChangeKind = "added" | "modified";
+export type ChangeKind = "added" | "modified" | "moved";
 
 export interface LineChange {
   commit: string;
@@ -24,6 +25,8 @@ export interface LineChange {
   kind: ChangeKind;
   before: string[];
   after: string[];
+  movedFrom?: SourceLocation;
+  possibleOrigins?: SourceLocation[];
 }
 
 export interface LineHistory {
@@ -39,6 +42,7 @@ const RECORD = "\x1e";
 const FIELD = "\x1f";
 const LOG_FORMAT = `${RECORD}%H${FIELD}%an${FIELD}%ae${FIELD}%at${FIELD}%s${FIELD}%b${FIELD}`;
 const HUNK_HEADER = /^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@/;
+const MAX_MOVES = 20;
 
 export async function traceLine(options: TraceOptions): Promise<LineHistory> {
   const { file, line, cwd = process.cwd(), rev = "HEAD" } = options;
@@ -63,7 +67,62 @@ export async function traceLine(options: TraceOptions): Promise<LineHistory> {
     );
   }
 
-  const log = await runGit(root, [
+  return {
+    root,
+    path,
+    line,
+    rev,
+    content: lines[line - 1] ?? "",
+    changes: await followLine(root, { rev, path, line }),
+  };
+}
+
+interface Position {
+  rev: string;
+  path: string;
+  line: number;
+}
+
+async function followLine(root: string, start: Position): Promise<LineChange[]> {
+  const changes: LineChange[] = [];
+  const visited = new Set<string>();
+  let position = start;
+
+  for (let moves = 0; ; moves += 1) {
+    const segment = parseLineLog(await lineLog(root, position));
+    changes.push(...segment);
+
+    const origin = segment.at(-1);
+    if (!origin || origin.kind !== "added" || moves >= MAX_MOVES || visited.has(origin.commit)) {
+      return changes;
+    }
+    visited.add(origin.commit);
+
+    const move = await findMovedFrom(root, {
+      commit: origin.commit,
+      path: origin.path,
+      lineNumber: origin.lineNumber,
+      text: origin.after[0] ?? "",
+    });
+
+    if (move.status === "none") return changes;
+    if (move.status === "ambiguous") {
+      changes[changes.length - 1] = { ...origin, possibleOrigins: move.candidates };
+      return changes;
+    }
+
+    changes[changes.length - 1] = {
+      ...origin,
+      kind: "moved",
+      before: [move.text],
+      movedFrom: move.from,
+    };
+    position = { rev: `${origin.commit}^`, path: move.from.path, line: move.from.lineNumber };
+  }
+}
+
+function lineLog(root: string, { rev, path, line }: Position): Promise<string> {
+  return runGit(root, [
     "log",
     `-L${line},${line}:${path}`,
     `--format=${LOG_FORMAT}`,
@@ -71,15 +130,6 @@ export async function traceLine(options: TraceOptions): Promise<LineHistory> {
     "--no-ext-diff",
     rev,
   ]);
-
-  return {
-    root,
-    path,
-    line,
-    rev,
-    content: lines[line - 1] ?? "",
-    changes: parseLineLog(log),
-  };
 }
 
 export function parseLineLog(output: string): LineChange[] {
