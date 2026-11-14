@@ -1,4 +1,5 @@
 import { WhyError } from "./errors.ts";
+import { parseDiffPath, readFileAt } from "./files.ts";
 import { runGit } from "./git.ts";
 import { findRepoRoot, toRepoPath } from "./repo.ts";
 
@@ -137,9 +138,9 @@ function parseDiff(diff: string): ParsedDiff {
         inHunk = true;
         result.lineNumber = Number(header[3]);
       } else if (raw.startsWith("+++ ")) {
-        result.path = stripPrefix(raw.slice(4));
+        result.path = parseDiffPath(raw);
       } else if (raw.startsWith("--- ") && result.path === "") {
-        result.path = stripPrefix(raw.slice(4));
+        result.path = parseDiffPath(raw);
       }
       continue;
     }
@@ -150,11 +151,6 @@ function parseDiff(diff: string): ParsedDiff {
   }
 
   return result;
-}
-
-function stripPrefix(path: string): string {
-  if (path === "/dev/null") return "";
-  return path.replace(/^[ab]\//, "");
 }
 
 async function verifyRevision(root: string, rev: string): Promise<void> {
@@ -171,8 +167,5 @@ async function readLines(root: string, rev: string, path: string): Promise<strin
   } catch (error) {
     throw new WhyError("FILE_NOT_FOUND", `${path} does not exist at ${rev}`, { cause: error });
   }
-  const content = await runGit(root, ["show", `${rev}:${path}`]);
-  const lines = content.split("\n");
-  if (lines.at(-1) === "") lines.pop();
-  return lines;
+  return readFileAt(root, rev, path);
 }
