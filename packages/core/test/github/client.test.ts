@@ -1,4 +1,4 @@
-import { mkdtempSync, readdirSync, readFileSync, rmSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
@@ -218,6 +218,20 @@ describe("file cache", () => {
     expect(await fileCache(dir).get("/repos/a/b/pulls/1")).toMatchObject({
       value: { title: "public data" },
     });
+  });
+
+  it("keeps the cache readable only by the current user", async () => {
+    const root = mkdtempSync(join(tmpdir(), "why-cache-"));
+    dirs.push(root);
+    const fresh = join(root, "fresh", "github");
+    const existing = join(root, "existing");
+    mkdirSync(existing, { mode: 0o755 });
+
+    for (const dir of [fresh, existing]) {
+      await fileCache(dir).set("/x", { value: 1, storedAt: 0 });
+      expect(statSync(dir).mode & 0o777).toBe(0o700);
+      expect(statSync(join(dir, readdirSync(dir)[0]!)).mode & 0o777).toBe(0o600);
+    }
   });
 
   it("treats missing or broken files as a cache miss", async () => {

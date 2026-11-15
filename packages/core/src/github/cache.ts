@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { mkdir, readFile, rename, writeFile } from "node:fs/promises";
+import { chmod, mkdir, readFile, rename, writeFile } from "node:fs/promises";
 import { homedir } from "node:os";
 import { join } from "node:path";
 
@@ -42,10 +42,11 @@ export function fileCache(dir: string): Cache {
     },
     async set(key, entry) {
       try {
-        await mkdir(dir, { recursive: true });
+        await mkdir(dir, { recursive: true, mode: 0o700 });
+        await chmod(dir, 0o700);
         const file = fileFor(key);
         const temp = `${file}.${process.pid}.tmp`;
-        await writeFile(temp, JSON.stringify({ key, ...entry }));
+        await writeFile(temp, JSON.stringify({ key, ...entry }), { mode: 0o600 });
         await rename(temp, file);
       } catch {
         return;
