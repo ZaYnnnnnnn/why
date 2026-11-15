@@ -23,7 +23,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="en">
       <body className="min-h-dvh">
         <header className="border-b border-line">
-          <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
+          <div className="mx-auto flex h-14 max-w-[96rem] items-center justify-between px-4">
             <Link href="/" className="font-mono text-lg font-semibold tracking-tight">
               why<span className="text-accent">?</span>
             </Link>

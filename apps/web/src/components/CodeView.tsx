@@ -27,7 +27,15 @@ export function CodeView({ repo, path, github, children }: Props) {
       setSelected(line);
       const url = `${window.location.pathname}${window.location.search}${line ? `#L${line}` : ""}`;
       window.history.replaceState(null, "", url);
-      if (scroll && line) lineElement(line)?.scrollIntoView({ block: "center" });
+
+      const element = line ? lineElement(line) : undefined;
+      if (!element) return;
+      if (!window.matchMedia("(min-width: 64rem)").matches) {
+        const top = element.getBoundingClientRect().top + window.scrollY - 72;
+        window.scrollTo({ top, behavior: scroll ? "auto" : "smooth" });
+      } else if (scroll) {
+        element.scrollIntoView({ block: "center" });
+      }
     },
     [lineElement],
   );
