@@ -3,10 +3,11 @@
   "include": [
     "packages/*/src",
     "packages/*/test",
-    "apps/*/src",
     "apps/*/test",
     "apps/*/scripts",
     "*.config.ts",
-    "eval"
+    "eval",
+    "apps/cli/src",
+    "apps/web/src/lib"
   ]
 }

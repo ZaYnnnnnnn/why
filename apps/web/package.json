@@ -4,9 +4,21 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "dev": "next dev",
+    "build": "next build",
     "generate": "node scripts/generate.ts"
   },
   "dependencies": {
-    "@why/core": "workspace:*"
+    "@why/core": "workspace:*",
+    "next": "~16.4.6",
+    "react": "~19.3.1",
+    "react-dom": "~19.3.1",
+    "shiki": "~4.6.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "~4.3.5",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "tailwindcss": "~4.3.5"
   }
 }

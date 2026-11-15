@@ -1,0 +1,110 @@
+@import "tailwindcss";
+
+:root {
+  --bg: #fafaf8;
+  --fg: #1d1c1a;
+  --muted: #6c6a64;
+  --line: #e6e4df;
+  --panel: #ffffff;
+  --accent: #c2410c;
+  --accent-soft: #fff1e7;
+  --selected: #fff3e3;
+  --removed: #b42318;
+  --added: #067647;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #121211;
+    --fg: #ebe9e4;
+    --muted: #9b9890;
+    --line: #2a2926;
+    --panel: #1a1918;
+    --accent: #fb923c;
+    --accent-soft: #2b1b10;
+    --selected: #2b2116;
+    --removed: #f97066;
+    --added: #47cd89;
+  }
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-fg: var(--fg);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-panel: var(--panel);
+  --color-accent: var(--accent);
+  --color-accent-soft: var(--accent-soft);
+  --color-removed: var(--removed);
+  --color-added: var(--added);
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+
+html {
+  color-scheme: light dark;
+}
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
+
+.code .line {
+  display: grid;
+  grid-template-columns: 3.5rem 0.9rem 1fr;
+  min-height: 1.5rem;
+  line-height: 1.5rem;
+}
+
+.code .line .num {
+  text-align: right;
+  padding-right: 0.75rem;
+  color: var(--muted);
+  user-select: none;
+}
+
+.code .line .dot {
+  user-select: none;
+}
+
+.code .line[data-answered] {
+  cursor: pointer;
+}
+
+.code .line[data-answered] .dot::before {
+  content: "";
+  display: inline-block;
+  width: 0.35rem;
+  height: 0.35rem;
+  border-radius: 9999px;
+  background: var(--line);
+  vertical-align: middle;
+}
+
+.code .line[data-answered]:hover {
+  background: var(--accent-soft);
+}
+
+.code .line[data-answered]:hover .dot::before,
+.code .line[data-selected] .dot::before {
+  background: var(--accent);
+}
+
+.code .line[data-selected] {
+  background: var(--selected);
+  box-shadow: inset 3px 0 0 var(--accent);
+}
+
+.code .text {
+  white-space: pre;
+  padding-right: 1.5rem;
+}
