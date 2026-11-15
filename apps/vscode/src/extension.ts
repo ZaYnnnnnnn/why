@@ -10,6 +10,7 @@ import {
   isWhyError,
   type AiProvider,
 } from "@why/core";
+import { registerCodeLens } from "./codeLens.ts";
 import { lookUpLine } from "./lookup.ts";
 import { renderBody, renderPage, type ViewState } from "./render.ts";
 
@@ -20,6 +21,7 @@ let view: ViewState | undefined;
 let lastRequest: { uri: vscode.Uri; line: number } | undefined;
 
 export function activate(context: vscode.ExtensionContext): void {
+  registerCodeLens(context);
   context.subscriptions.push(
     vscode.commands.registerCommand("why.showLineHistory", (uri?: vscode.Uri, line?: number) =>
       showLineHistory(context, uri, line),
