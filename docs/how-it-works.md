@@ -175,7 +175,7 @@ claim must point at a real piece of evidence.**
    again, `why` shows the plain timeline instead of unchecked claims.
 
 The evidence comes from strangers (anyone can write a PR description), so the prompt marks it as
-data, not instructions, and the model runs with no tools. By default `why` uses your own Claude
+data, not instructions, and the model runs with no tools and no MCP servers. By default `why` uses your own Claude
 Code sign-in (`claude -p`), in an empty temporary folder so the traced project's own settings are
 never loaded. With `--ai anthropic` it uses your own API key instead. Answers are cached, so asking
 again is instant.

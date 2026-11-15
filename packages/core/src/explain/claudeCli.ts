@@ -62,6 +62,7 @@ export function createClaudeCliProvider(options: ClaudeCliOptions = {}): AiProvi
       "json",
       "--tools",
       "",
+      "--strict-mcp-config",
       "--no-session-persistence",
       "--system-prompt",
       request.system,

@@ -35,7 +35,8 @@ runs with no tools, and the citation check rejects claims that point at nothing.
 **Providers.**
 
 - `claude -p` (default): the user's own Claude Code sign-in, so a Max plan costs nothing extra.
-  Tools off, no saved session, run in an empty temp folder so the traced repo's `CLAUDE.md` and
+  Tools and MCP servers off (`--tools ""` covers only built-in tools, so `--strict-mcp-config`
+  stops servers from the user's own settings loading), no saved session, run in an empty temp folder so the traced repo's `CLAUDE.md` and
   settings are never loaded, evidence on stdin. `ANTHROPIC_API_KEY` is removed from its
   environment so it cannot silently bill an API key. Falls back to `~/.local/bin/claude` when the
   command is not on PATH.

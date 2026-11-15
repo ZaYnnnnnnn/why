@@ -33,7 +33,7 @@ function fakeRun(stdout: unknown, extra: { stderr?: string; code?: number } = {}
 }
 
 describe("claude -p provider", () => {
-  it("runs claude headless with tools off, no session, the schema and the prompt on stdin", async () => {
+  it("runs claude headless with tools and MCP servers off, no session, the schema and the prompt on stdin", async () => {
     const { run, calls } = fakeRun({ is_error: false, structured_output: { summary: "ok" } });
     const provider = createClaudeCliProvider({ run, env: { PATH: "/usr/bin" } });
 
@@ -49,6 +49,7 @@ describe("claude -p provider", () => {
       "json",
       "--tools",
       "",
+      "--strict-mcp-config",
       "--no-session-persistence",
       "--system-prompt",
       "You explain code.",
