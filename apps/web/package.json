@@ -1,0 +1,12 @@
+{
+  "name": "@why/web",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "generate": "node scripts/generate.ts"
+  },
+  "dependencies": {
+    "@why/core": "workspace:*"
+  }
+}

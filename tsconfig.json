@@ -5,6 +5,7 @@
     "packages/*/test",
     "apps/*/src",
     "apps/*/test",
+    "apps/*/scripts",
     "*.config.ts",
     "eval"
   ]

@@ -1,0 +1,31 @@
+[
+  {
+    "repo": "express",
+    "title": "Express",
+    "description": "The minimal web framework for Node.js",
+    "files": [
+      "lib/application.js",
+      "lib/express.js",
+      "lib/request.js",
+      "lib/response.js",
+      "lib/utils.js",
+      "lib/view.js"
+    ]
+  },
+  {
+    "repo": "flask",
+    "title": "Flask",
+    "description": "The Python micro framework for building web applications",
+    "files": ["src/flask/blueprints.py", "src/flask/helpers.py"]
+  },
+  {
+    "repo": "react",
+    "title": "React",
+    "description": "The library for web and native user interfaces",
+    "files": [
+      "packages/react/src/ReactHooks.js",
+      "packages/react-dom-bindings/src/client/CSSPropertyOperations.js",
+      "packages/scheduler/src/forks/Scheduler.js"
+    ]
+  }
+]
