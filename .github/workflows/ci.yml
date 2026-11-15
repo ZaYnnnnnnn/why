@@ -21,3 +21,8 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm test
       - run: pnpm --filter @why/web build
+      - run: pnpm --filter why-line-history package
+      - uses: actions/upload-artifact@v7
+        with:
+          name: why-line-history-vsix
+          path: apps/vscode/why-line-history.vsix
