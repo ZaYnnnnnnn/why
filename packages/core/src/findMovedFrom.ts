@@ -46,6 +46,7 @@ export async function findMovedFrom(root: string, target: MoveTarget): Promise<M
     "diff",
     "--no-color",
     "--no-ext-diff",
+    "--no-textconv",
     "--unified=0",
     "-M",
     parent,

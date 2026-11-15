@@ -193,6 +193,7 @@ function lineLog(root: string, { rev, path, line }: Position): Promise<string> {
     `--format=${LOG_FORMAT}`,
     "--no-color",
     "--no-ext-diff",
+    "--no-textconv",
     rev,
   ]);
 }

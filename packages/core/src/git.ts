@@ -7,12 +7,16 @@ const MAX_OUTPUT_BYTES = 64 * 1024 * 1024;
 
 export async function runGit(cwd: string, args: string[]): Promise<string> {
   try {
-    const { stdout } = await execFileAsync("git", ["-c", "core.quotepath=off", ...args], {
-      cwd,
-      encoding: "utf8",
-      maxBuffer: MAX_OUTPUT_BYTES,
-      env: { ...process.env, GIT_TERMINAL_PROMPT: "0", LC_ALL: "C" },
-    });
+    const { stdout } = await execFileAsync(
+      "git",
+      ["-c", "core.quotepath=off", "-c", "core.fsmonitor=false", ...args],
+      {
+        cwd,
+        encoding: "utf8",
+        maxBuffer: MAX_OUTPUT_BYTES,
+        env: { ...process.env, GIT_TERMINAL_PROMPT: "0", LC_ALL: "C" },
+      },
+    );
     return stdout;
   } catch (error) {
     throw toWhyError(error, args);

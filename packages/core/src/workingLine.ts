@@ -100,7 +100,7 @@ async function diffTexts(before: string, after: string): Promise<string> {
     try {
       await execFileAsync(
         "git",
-        ["diff", "--no-index", "--no-color", "--no-ext-diff", "-U0", "--", a, b],
+        ["diff", "--no-index", "--no-color", "--no-ext-diff", "--no-textconv", "-U0", "--", a, b],
         { encoding: "utf8", maxBuffer: 64 * 1024 * 1024, env: { ...process.env, LC_ALL: "C" } },
       );
       return "";

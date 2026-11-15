@@ -1,9 +1,16 @@
-import { mkdirSync, mkdtempSync, rmSync } from "node:fs";
+import { chmodSync, existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createRepo, type TestRepo } from "@why/testkit";
 import { afterEach, describe, expect, it } from "vitest";
-import { findRepoRoot, runGit, toRepoPath, WhyError } from "../src/index.ts";
+import {
+  findRepoRoot,
+  mapToCommittedLine,
+  runGit,
+  toRepoPath,
+  traceLine,
+  WhyError,
+} from "../src/index.ts";
 
 const cleanups: Array<() => void> = [];
 
@@ -52,6 +59,28 @@ describe("runGit", () => {
     await expect(failure).rejects.toBeInstanceOf(WhyError);
     await expect(failure).rejects.toMatchObject({ code: "GIT_FAILED" });
     await expect(failure).rejects.toThrow(/^git show failed: /);
+  });
+});
+
+describe("programs named in a repository's git config", () => {
+  it("are never run while tracing or mapping a line", async () => {
+    const r = createRepo([
+      { message: "add", files: { ".gitattributes": "*.txt diff=evil\n", "f.txt": "a\nb\n" } },
+      { message: "grow", files: { "f.txt": "a\nb\nc\n" } },
+    ]);
+    cleanups.push(r.cleanup);
+    const dir = emptyDir();
+    const marker = join(dir, "ran");
+    const script = join(dir, "conv.sh");
+    writeFileSync(script, `#!/bin/sh\necho ran >> "${marker}"\ncat "$1"\n`);
+    chmodSync(script, 0o755);
+    r.git("config", "diff.evil.textconv", script);
+    r.git("config", "core.fsmonitor", script);
+
+    await traceLine({ cwd: r.path, file: "f.txt", line: 3 });
+    await mapToCommittedLine({ root: r.path, path: "f.txt", line: 2, text: "a\nNEW\nb\nc\n" });
+
+    expect(existsSync(marker)).toBe(false);
   });
 });
 
