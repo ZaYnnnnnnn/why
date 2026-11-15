@@ -50,9 +50,43 @@ describe("mapToCommittedLine", () => {
   });
 
   it("reports edited lines as modified", async () => {
-    expect(await map("a\nb\nC changed\nd\ne\n", 3)).toEqual({
+    const r = createRepo([
+      { message: "create", files: { "a.js": "start();\nconst limit = 10;\nend();\n" } },
+    ]);
+    repos.push(r);
+    expect(
+      await mapToCommittedLine({
+        root: r.path,
+        path: "a.js",
+        line: 2,
+        text: "start();\nconst limit = 50;\nend();\n",
+      }),
+    ).toEqual({ status: "uncommitted", reason: "modified" });
+  });
+
+  it("calls a new line typed over a blank or unrelated line added, not modified", async () => {
+    const r = createRepo([{ message: "create", files: { "a.rb": "end\n\ndef current_user\n" } }]);
+    repos.push(r);
+    const text = "end\ndef lol\nend\ndef current_user\n";
+
+    expect(await mapToCommittedLine({ root: r.path, path: "a.rb", line: 2, text })).toEqual({
+      status: "uncommitted",
+      reason: "added",
+    });
+    expect(await mapToCommittedLine({ root: r.path, path: "a.rb", line: 4, text })).toEqual({
+      status: "committed",
+      line: 3,
+    });
+  });
+
+  it("calls a line modified when the text it replaced resembles it", async () => {
+    expect(await map("a\nb\nc  \nd\ne\n", 3)).toEqual({
       status: "uncommitted",
       reason: "modified",
+    });
+    expect(await map("a\nb\nclient_id = 3\nd\ne\n", 3)).toEqual({
+      status: "uncommitted",
+      reason: "added",
     });
   });
 

@@ -4,6 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { promisify } from "node:util";
 import { WhyError } from "./errors.ts";
+import { normalize, similarity } from "./findMovedFrom.ts";
 import { runGit } from "./git.ts";
 
 const execFileAsync = promisify(execFile);
@@ -22,6 +23,7 @@ export interface Hunk {
 }
 
 const HUNK_HEADER = /^@@ -(\d+)(?:,(\d+))? \+(\d+)(?:,(\d+))? @@/;
+const SIMILAR_LINE = 0.5;
 
 export async function mapToCommittedLine(options: {
   root: string;
@@ -40,21 +42,33 @@ export async function mapToCommittedLine(options: {
   }
   if (committed === text) return { status: "committed", line };
 
-  return mapLine(parseHunks(await diffTexts(committed, text)), line);
+  const current = text.split("\n")[line - 1] ?? "";
+  return mapLine(parseHunks(await diffTexts(committed, text)), line, current);
 }
 
-export function mapLine(hunks: Hunk[], line: number): WorkingLine {
+export function mapLine(hunks: Hunk[], line: number, currentText?: string): WorkingLine {
   let delta = 0;
   for (const hunk of hunks) {
     const { oldCount, newStart, newCount } = hunk;
     if (newCount > 0 && line >= newStart && line < newStart + newCount) {
-      return { status: "uncommitted", reason: oldCount === 0 ? "added" : "modified" };
+      return {
+        status: "uncommitted",
+        reason: replacedSimilarLine(hunk, currentText) ? "modified" : "added",
+      };
     }
     const before = newCount > 0 ? newStart + newCount - 1 < line : newStart < line;
     if (!before) break;
     delta += oldCount - newCount;
   }
   return { status: "committed", line: line + delta };
+}
+
+function replacedSimilarLine(hunk: Hunk, currentText: string | undefined): boolean {
+  if (hunk.oldCount === 0) return false;
+  if (currentText === undefined) return true;
+  const current = normalize(currentText);
+  if (current === "") return false;
+  return hunk.removed.some((old) => similarity(normalize(old), current) >= SIMILAR_LINE);
 }
 
 export function parseHunks(diff: string): Hunk[] {
