@@ -113,6 +113,12 @@ Split into two parts reviewed separately.
 8. Switch between a light and a dark theme → the panel follows
 9. Turn off `why.codeLens.enabled` in settings → the "Why?" links disappear
 
+**Done:** all nine checks passed by hand in VS Code on 2026-11-15, on Express and on a private Rails
+repository (decision 0009). The hand test caught one bug, a new line typed over a blank line
+reported as "modified", fixed before release. The editor was already signed in to GitHub, so
+check 7 passed without a prompt. Not yet tried in Cursor. Released as
+[v0.2.0](https://github.com/ZaYnnnnnnn/why/releases/tag/v0.2.0) with the `.vsix` attached.
+
 ## Phase 8: MCP server (stretch)
 
 - Lets AI coding agents ask why code exists before changing it
