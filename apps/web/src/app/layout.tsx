@@ -3,7 +3,12 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import "./globals.css";
 
+const SITE_URL = process.env["SITE_URL"] ?? "https://zaynnnnnnn.github.io";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
+  openGraph: { type: "website", siteName: "why" },
+  twitter: { card: "summary_large_image" },
   title: { default: "why: ask any line of code why it exists", template: "%s · why" },
   description:
     "why follows a line of code back through every commit, move and rename, and shows the pull requests, reviews and issues behind each change.",
