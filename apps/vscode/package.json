@@ -31,6 +31,12 @@
   "activationEvents": [
     "onStartupFinished"
   ],
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": false,
+      "description": "why runs git on the files you open, and git can be set up by a repository to run other programs, so it only runs in folders you trust."
+    }
+  },
   "contributes": {
     "commands": [
       {
