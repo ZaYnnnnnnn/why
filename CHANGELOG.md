@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v0.2.1 (2026-11-15)
 
 - **Security:** git never runs a program named in a repository's own config (text-conversion
   filters and fsmonitor are turned off), and the extension stays off in folders the editor does

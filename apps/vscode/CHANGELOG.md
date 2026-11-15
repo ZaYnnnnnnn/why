@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.2.1
+
+Security fixes.
+
+- git never runs a program named in a repository's own config, and the extension stays off in
+  folders the editor does not trust
+- AI summaries through Claude Code load no MCP servers
+- The cache is readable only by your own account
+
 ## 0.2.0
 
 First release of the editor extension.

@@ -2,7 +2,7 @@
   "name": "why-line-history",
   "displayName": "why: line history",
   "description": "Ask any line of code why it exists: every commit, move and rename, with the pull requests, reviews and issues behind each change.",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "publisher": "zain-dev",
   "private": true,
   "type": "module",
