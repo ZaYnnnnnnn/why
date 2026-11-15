@@ -8,6 +8,8 @@
     "*.config.ts",
     "eval",
     "apps/cli/src",
-    "apps/web/src/lib"
+    "apps/web/src/lib",
+    "apps/vscode/src",
+    "apps/vscode/test"
   ]
 }

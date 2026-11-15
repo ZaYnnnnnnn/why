@@ -1,0 +1,122 @@
+{
+  "name": "why-line-history",
+  "displayName": "why: line history",
+  "description": "Ask any line of code why it exists: every commit, move and rename, with the pull requests, reviews and issues behind each change.",
+  "version": "0.2.0",
+  "publisher": "zain-dev",
+  "private": true,
+  "type": "module",
+  "license": "MIT",
+  "icon": "images/icon.png",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ZaYnnnnnnn/why"
+  },
+  "homepage": "https://zaynnnnnnn.github.io/why/",
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Other",
+    "Visualization"
+  ],
+  "keywords": [
+    "git",
+    "history",
+    "blame",
+    "pull request",
+    "code archaeology"
+  ],
+  "main": "./dist/extension.cjs",
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "why.showLineHistory",
+        "title": "Why does this line exist?",
+        "category": "why"
+      },
+      {
+        "command": "why.signInToGitHub",
+        "title": "Sign in to GitHub for more lookups",
+        "category": "why"
+      },
+      {
+        "command": "why.setAnthropicKey",
+        "title": "Set Anthropic API key",
+        "category": "why"
+      },
+      {
+        "command": "why.clearAnthropicKey",
+        "title": "Remove Anthropic API key",
+        "category": "why"
+      }
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "why.showLineHistory",
+          "when": "resourceScheme == file",
+          "group": "1_why@1"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "why.showLineHistory",
+          "when": "editorIsOpen"
+        }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "why.showLineHistory",
+        "key": "ctrl+alt+h",
+        "mac": "ctrl+cmd+h",
+        "when": "editorTextFocus"
+      }
+    ],
+    "configuration": {
+      "title": "why",
+      "properties": {
+        "why.codeLens.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show a \"Why?\" link above functions and classes."
+        },
+        "why.ai.provider": {
+          "type": "string",
+          "enum": [
+            "claude-cli",
+            "anthropic"
+          ],
+          "enumDescriptions": [
+            "Your Claude Code sign-in (the claude command), no API key needed",
+            "The Anthropic API with a key stored by the \"why: Set Anthropic API key\" command"
+          ],
+          "default": "claude-cli",
+          "description": "Which AI writes the summary when you press \"Explain with AI\"."
+        },
+        "why.ai.model": {
+          "type": "string",
+          "default": "",
+          "description": "Model for the AI summary. Leave empty for the provider's default."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "build": "node esbuild.mjs",
+    "package": "node esbuild.mjs && vsce package --no-dependencies --out why-line-history.vsix"
+  },
+  "dependencies": {
+    "@why/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/vscode": "~1.90.0",
+    "@vscode/vsce": "~4.1.1",
+    "esbuild": "~0.28.2",
+    "@why/testkit": "workspace:*"
+  }
+}
