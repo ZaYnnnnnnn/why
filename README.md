@@ -9,7 +9,7 @@ that links to every source it used.
 **Live demo: [zaynnnnnnn.github.io/why](https://zaynnnnnnn.github.io/why/)**. Click any marked
 line in Express, Flask or React to see why it exists.
 
-> **Status:** under construction, Phase 5 of 8 in progress: the web demo is up. See the [roadmap](#roadmap).
+> **Status:** under construction, Phase 5 of 8 done: the web demo is live. See the [roadmap](#roadmap).
 
 ## What it will look like
 
@@ -56,7 +56,7 @@ _To be written in Phase 6._
 - [x] **Phase 2:** follow the line across moves and renames
 - [x] **Phase 3:** connect commits to pull requests and issues
 - [x] **Phase 4:** AI explanation with citations, plus a measured accuracy score
-- [ ] **Phase 5:** web demo with pre-generated answers for well-known repos
+- [x] **Phase 5:** web demo with pre-generated answers for well-known repos
 - [ ] **Phase 6:** launch
 - [ ] **Phase 7:** VS Code extension (also works in Cursor and Windsurf)
 - [ ] **Phase 8:** MCP server so AI coding agents can ask "why" before changing code

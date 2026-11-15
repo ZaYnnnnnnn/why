@@ -71,11 +71,15 @@ Split into two parts reviewed separately.
 
 ## Phase 5: Web demo
 
-- Script that picks about 300 interesting lines and pre-generates their answers as JSON
-- Next.js static site: repo picker, file browser, timeline panel; phone-friendly, dark mode
-- Deployed free on Vercel at `why.zain-dev.com`
+- Generator traces every answerable line of chosen files: 2,061 lines from Express, Flask and
+  React (instead of the planned ~300 hand-picked lines)
+- Next.js static site: project pages, code view with clickable lines, history panel (side panel
+  or bottom sheet), `#L` links, dark and light theme
+- Deployed free on GitHub Pages at https://zaynnnnnnn.github.io/why/ (instead of Vercel, so no
+  extra account); `why.zain-dev.com` can be added later with one DNS record
+- AI explanations left out until a Claude plan is connected
 
-**Done when:** the live link works on phone and laptop.
+**Done:** live and checked on laptop and narrow window sizes (decision 0008).
 
 ## Phase 6: Launch
 
