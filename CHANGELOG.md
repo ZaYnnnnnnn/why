@@ -1,5 +1,16 @@
 # Changelog
 
+## v0.2.0 (2026-11-15)
+
+- **Editor extension** for VS Code, Cursor and Windsurf: right-click a line, use the shortcut, or
+  click "Why?" above a function to see its history, pull requests, reviews and issues in a side
+  panel that follows the editor's theme.
+- **Edited files:** unsaved and uncommitted changes are mapped back to the last commit, and a line
+  typed since then says it has no history yet.
+- **GitHub sign-in** through the editor's own login; AI summaries with Claude Code or an Anthropic
+  key kept in the editor's secret storage.
+- Install by downloading `why-line-history.vsix` below and choosing "Install from VSIX…".
+
 ## v0.1.0 (2026-11-15)
 
 The first public version.

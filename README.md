@@ -101,6 +101,17 @@ not yet follow code that was **copied** to a new file, lines **split** by reform
 **rewrites**, or a line that was **reverted and re-landed**. Every miss is explained in
 [decision 0007](docs/decisions/0007-measuring-accuracy.md).
 
+## In your editor
+
+The **why: line history** extension brings the same panel into VS Code, Cursor and Windsurf:
+right-click any line → **Why does this line exist?**, or click **Why?** above a function. It
+works on your own repositories (private ones too), maps unsaved edits back to the last commit, and
+uses the editor's GitHub login.
+
+Download `why-line-history.vsix` from the latest
+[release](https://github.com/ZaYnnnnnnn/why/releases) and run **Extensions: Install from VSIX…**.
+Details in the [extension README](apps/vscode/README.md).
+
 ## Use it
 
 Requires Node 22.18+, pnpm and git.
@@ -138,10 +149,11 @@ for the higher GitHub limit. It is only sent to `api.github.com` and never saved
 | `packages/testkit` | Builds git repositories with a scripted history for tests    |
 | `apps/cli`         | The `why` command                                            |
 | `apps/web`         | The live demo and its data generator                         |
+| `apps/vscode`      | The editor extension for VS Code, Cursor and Windsurf        |
 | `eval`             | The accuracy test: 30 labelled lines and the scoring script  |
 | `docs/decisions`   | Why each design choice was made                              |
 
-`pnpm check` runs lint, formatting, type checks and 213 tests. None of the tests touch the network.
+`pnpm check` runs lint, formatting, type checks and 236 tests. None of the tests touch the network.
 
 ## Design decisions
 
@@ -155,6 +167,7 @@ Every choice someone could reasonably ask "why?" about is written down:
 6. [AI explanations that may only cite the evidence](docs/decisions/0006-ai-explanations-with-checked-citations.md)
 7. [Measuring accuracy on 30 hand-checked lines](docs/decisions/0007-measuring-accuracy.md)
 8. [A static web demo with pre-traced lines](docs/decisions/0008-static-web-demo.md)
+9. [A VS Code extension that also runs in Cursor and Windsurf](docs/decisions/0009-vscode-extension.md)
 
 ## How this was built
 
@@ -171,7 +184,8 @@ tool is not grading itself.
 - [x] Accuracy test and a live demo
 - [ ] AI summaries in the live demo
 - [ ] Follow copied code and lines split by reformatting
-- [ ] VS Code extension (also works in Cursor and Windsurf)
+- [x] VS Code extension (also works in Cursor and Windsurf)
+- [ ] Extension in the VS Code Marketplace and Open VSX
 - [ ] MCP server, so AI coding agents can ask why code exists before changing it
 
 ## License

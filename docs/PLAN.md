@@ -93,9 +93,25 @@ Split into two parts reviewed separately.
 
 ## Phase 7: VS Code extension
 
-- "Why?" link above functions plus a command for any line; timeline side panel
-- Local git, VS Code's built-in GitHub sign-in, optional AI key in secret storage
-- Published to the VS Code Marketplace and Open VSX
+- "Why?" link above functions plus a command, right-click menu and shortcut; timeline side panel
+- Unsaved and uncommitted edits mapped back to the last commit (`mapToCommittedLine`)
+- Local git, the editor's built-in GitHub sign-in, optional AI key in secret storage
+- `.vsix` built in CI and attached to GitHub releases by a version tag
+- **Later (Zain's accounts):** publishing to the VS Code Marketplace and Open VSX
+
+**Hand test checklist** (VS Code and Cursor):
+
+1. Install `apps/vscode/why-line-history.vsix` with "Extensions: Install from VSIX…"
+2. Open a file in a git repository from GitHub, right-click a line → "Why does this line exist?"
+   → the panel opens beside the code with the line's history
+3. Click "Why?" above a function → its declaration line's history
+4. Press Ctrl+Cmd+H (Mac) or Ctrl+Alt+H on another line
+5. Add two lines at the top without saving, then ask about a line below → same history as before;
+   ask about one of the new lines → "Not committed yet"
+6. Click a PR or commit link → it opens on GitHub in the browser
+7. Click "Sign in to GitHub" in the panel → the editor's GitHub login, then the panel reloads
+8. Switch between a light and a dark theme → the panel follows
+9. Turn off `why.codeLens.enabled` in settings → the "Why?" links disappear
 
 ## Phase 8: MCP server (stretch)
 
