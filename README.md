@@ -153,7 +153,7 @@ for the higher GitHub limit. It is only sent to `api.github.com` and never saved
 | `eval`             | The accuracy test: 30 labelled lines and the scoring script  |
 | `docs/decisions`   | Why each design choice was made                              |
 
-`pnpm check` runs lint, formatting, type checks and 236 tests. None of the tests touch the network.
+`pnpm check` runs lint, formatting, type checks and 240 tests. None of the tests touch the network.
 
 ## Design decisions
 

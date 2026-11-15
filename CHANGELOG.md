@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+- **Security:** git never runs a program named in a repository's own config (text-conversion
+  filters and fsmonitor are turned off), and the extension stays off in folders the editor does
+  not trust.
+- **Security:** AI summaries through `claude -p` load no MCP servers, so text in a commit or PR
+  cannot steer the model into using one.
+- **Security:** the cache in `~/.cache/why` is readable only by your own account.
+
 ## v0.2.0 (2026-11-15)
 
 - **Editor extension** for VS Code, Cursor and Windsurf: right-click a line, use the shortcut, or
