@@ -83,9 +83,13 @@ Split into two parts reviewed separately.
 
 ## Phase 6: Launch
 
-- Final README: demo GIF, live link, architecture diagram, accuracy table, roadmap
-- "How it works" written by Zain in his own words
-- Write-up post; repo pinned on GitHub and featured on LinkedIn
+- Final README: demo GIF, live link, real CLI output, architecture diagram, accuracy table,
+  usage, decision index, roadmap
+- "How it works": written by Claude at Zain's request, as a summary in the README and a full
+  walk-through in `docs/how-it-works.md` that doubles as his study guide
+- Link-preview image for sharing the demo; release v0.1.0
+- Repo pinned on GitHub with its About text (Zain)
+- **Moved to the end:** the LinkedIn post and LinkedIn Featured, once AI summaries are connected
 
 ## Phase 7: VS Code extension
 
