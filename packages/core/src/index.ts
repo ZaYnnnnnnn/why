@@ -45,3 +45,5 @@ export { findGitHubRepo, parseGitHubRemote, parseRepoSlug } from "./github/remot
 export type { GitHubRepo } from "./github/remote.ts";
 export { DEFAULT_MIN_LINE_SIMILARITY, parseLineLog, traceLine } from "./traceLine.ts";
 export type { ChangeKind, LineChange, LineHistory, TraceOptions } from "./traceLine.ts";
+export { mapLine, mapToCommittedLine, parseHunks } from "./workingLine.ts";
+export type { Hunk, WorkingLine } from "./workingLine.ts";
