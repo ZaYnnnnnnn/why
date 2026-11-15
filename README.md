@@ -9,7 +9,7 @@ that links to every source it used.
 **Live demo: [zaynnnnnnn.github.io/why](https://zaynnnnnnn.github.io/why/)**. Click any marked
 line in Express, Flask or React to see why it exists.
 
-> **Status:** under construction, Phase 4 of 8 done. Next: the web demo. See the [roadmap](#roadmap).
+> **Status:** under construction, Phase 5 of 8 in progress: the web demo is up. See the [roadmap](#roadmap).
 
 ## What it will look like
 
